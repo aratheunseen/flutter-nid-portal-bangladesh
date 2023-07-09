@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nid/ad_helper.dart';
+import 'package:nid/browser.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,7 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   BannerAd? _bannerAd;
-  // InterstitialAd? _interstitialAd;
+  InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
@@ -31,6 +32,22 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     ).load();
+
+    InterstitialAd.load(
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _interstitialAd = ad;
+          });
+          // Keep a reference to the ad so you can show it later.
+        },
+        onAdFailedToLoad: (err) {
+          // print('Failed to load an interstitial ad: ${err.message}');
+        },
+      ),
+    );
 
     // RewardedAd.load(
     //   adUnitId: AdHelper.rewardedAdUnitId,
@@ -83,7 +100,7 @@ class _HomePageState extends State<HomePage> {
     'New Application',
     'Claim Account',
     'Manage Account',
-    'Form Download',
+    'Download Forms',
     'Fees Calculator',
   ];
 
@@ -152,6 +169,69 @@ class _HomePageState extends State<HomePage> {
                         return GestureDetector(
                           onTap: () {
                             // Handle the click event
+                            if (_interstitialAd != null) {
+                              _interstitialAd!.show();
+                            } else {
+                              // print('Interstitial ad is still loading...');
+                            }
+
+                            // Navigator.pushNamed(context, '/browser',
+                            //     arguments: {
+                            //       'url': 'https://services.nidw.gov.bd/',
+                            //       'title': title[index],
+                            //     });
+                            if (index == 0) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Browser(
+                                    url:
+                                        'https://services.nidw.gov.bd/nid-pub/',
+                                    title: title[index],
+                                  ),
+                                ),
+                              );
+                            } else if (index == 1) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Browser(
+                                    url: 'https://nidw.gov.bd/claim',
+                                    title: title[index],
+                                  ),
+                                ),
+                              );
+                            } else if (index == 2) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Browser(
+                                    url: 'https://nidw.gov.bd/login',
+                                    title: title[index],
+                                  ),
+                                ),
+                              );
+                            } else if (index == 3) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Browser(
+                                    url: 'https://nidw.gov.bd/download',
+                                    title: title[index],
+                                  ),
+                                ),
+                              );
+                            } else if (index == 4) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Browser(
+                                    url: 'https://nidw.gov.bd/fees',
+                                    title: title[index],
+                                  ),
+                                ),
+                              );
+                            }
                           },
                           child: Card(
                             child: Column(
@@ -183,7 +263,7 @@ class _HomePageState extends State<HomePage> {
                                   child: Text(
                                     descrition[index],
                                     style: const TextStyle(
-                                      color: Colors.grey,
+                                      color: Colors.black54,
                                       fontSize: 10.0,
                                     ),
                                   ),
@@ -195,18 +275,13 @@ class _HomePageState extends State<HomePage> {
                       }),
                     ),
                   ),
-                  if (_bannerAd != null)
-                    Center(
-                      child: SizedBox(
-                        height: 60,
-                        child: AdWidget(ad: _bannerAd!),
-                      ),
-                    ),
                 ],
               );
             } else {
               return const Center(
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(
+                  color: Colors.blue,
+                ),
               );
             }
           },
