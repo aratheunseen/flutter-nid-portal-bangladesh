@@ -22,6 +22,16 @@ class AdHelper {
     }
   }
 
+  static String get nativeAdUnitId {
+    if (Platform.isAndroid) {
+      return "ca-app-pub-2474229370148368/5169045826";
+    } else if (Platform.isIOS) {
+      return "ca-app-pub-3940256099942544/4411468910";
+    } else {
+      throw UnsupportedError("Unsupported platform");
+    }
+  }
+
   static String get rewardedAdUnitId {
     if (Platform.isAndroid) {
       return "ca-app-pub-3940256099942544/5224354917";
