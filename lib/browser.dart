@@ -2,6 +2,9 @@
 // import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:nid/ads/ads_config.dart';
+
 import 'package:webview_flutter/webview_flutter.dart';
 // #docregion platform_imports
 // Import for Android features.
@@ -77,10 +80,45 @@ const String kTransparentBackgroundPage = '''
 
 class _BrowserState extends State<Browser> {
   late final WebViewController _controller;
+  BannerAd? _bannerAd;
+  InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
     super.initState();
+
+    // ads
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.fullBanner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+        },
+      ),
+    ).load();
+
+    InterstitialAd.load(
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _interstitialAd = ad;
+          });
+          // Keep a reference to the ad so you can show it later.
+        },
+        onAdFailedToLoad: (err) {
+          // print('Failed to load an interstitial ad: ${err.message}');
+        },
+      ),
+    );
 
     // #docregion platform_features
     late final PlatformWebViewControllerCreationParams params;
@@ -170,8 +208,10 @@ Page resource error:
             Navigator.pop(context);
           },
         ),
-        title: Text(widget.title,
-            style: const TextStyle(color: Colors.black45, fontSize: 18)),
+        title: Center(
+          child: Text(widget.title,
+              style: const TextStyle(color: Colors.black45, fontSize: 18)),
+        ),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.black45),
@@ -181,7 +221,52 @@ Page resource error:
           ),
         ],
       ),
-      body: WebViewWidget(controller: _controller),
+      body: Column(
+        children: [
+          Expanded(
+            child: WebViewWidget(controller: _controller),
+          ),
+          Container(
+            height: 60,
+            color: Colors.black45,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    _controller.goBack();
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward, color: Colors.white),
+                  onPressed: () {
+                    _controller.goForward();
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.replay, color: Colors.white),
+                  onPressed: () {
+                    _controller.reload();
+                  },
+                ),
+              ],
+            ),
+          ),
+          if (_bannerAd != null)
+            SizedBox(
+              height: 60,
+              child: AdWidget(ad: _bannerAd!),
+            ),
+          // if (_interstitialAd != null)
+          //   ElevatedButton(
+          //     onPressed: () {
+          //       _interstitialAd!.show();
+          //     },
+          //     child: const Text('Show Interstitial'),
+          //   ),
+        ],
+      ),
     );
     // const Center(
     //   child: Text('This is a browser.',
