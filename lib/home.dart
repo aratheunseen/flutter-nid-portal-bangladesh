@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:nid/ad_helper.dart';
+import 'package:nid/ads/ads_config.dart';
 import 'package:nid/browser.dart';
 
 class HomePage extends StatefulWidget {
@@ -90,8 +90,8 @@ class _HomePageState extends State<HomePage> {
   List<String> image = [
     'https://cdn1.iconfinder.com/data/icons/business-and-finance-3d-s4/128/business_finance_applicant_application_job_recruitment_graduation_registration_register.png',
     'https://cdn0.iconfinder.com/data/icons/metaverse-48/128/face_scan.png',
-    // 'https://cdn4.iconfinder.com/data/icons/security-339/128/Login_Page.png',
     'https://cdn2.iconfinder.com/data/icons/business-1493/128/account_profile_id_id_card_identity_person_user.png',
+    'https://cdn4.iconfinder.com/data/icons/security-339/128/Login_Page.png',
     'https://cdn1.iconfinder.com/data/icons/approval-2/128/Consent.png',
     'https://cdn2.iconfinder.com/data/icons/business-1772/128/Untitled_design_9.png',
   ];
@@ -100,6 +100,7 @@ class _HomePageState extends State<HomePage> {
     'New Application',
     'Claim Account',
     'Manage Account',
+    'Recover Account',
     'Download Forms',
     'Fees Calculator',
   ];
@@ -108,8 +109,18 @@ class _HomePageState extends State<HomePage> {
     'আপনার জাতীয় পরিচয়পত্র না থাকলে, নতুন নিবন্ধন করুন',
     'আপনার যদি জাতীয় পরিচয়পত্র থাকে, তাহলে অ্যাকাউন্ট ক্লেইম করুন',
     'আপনার যদি অনলাইন একাউন্ট থাকে তাহলে লগইন করুন',
-    ' হারানো, চুরি হওয়া বা তথ্য সংশোধনের আবেদন ফর্ম ডাউনলোড করুন',
+    'আপনার অ্যাকাউন্ট আছে, কিন্তু পাসওয়ার্ড ভুলে গিয়েছেন? পুনরুদ্ধার করুন',
+    'হারানো, চুরি হওয়া বা তথ্য সংশোধনের আবেদন ফর্ম ডাউনলোড করুন',
     'কার্ডের তথ্য পরিবর্তন অথবা সংশোধন অথবা কার্ড রিইস্যু ফি হিসাব করুন',
+  ];
+
+  List<String> url = [
+    'https://services.nidw.gov.bd/nid-pub/register-account',
+    'https://services.nidw.gov.bd/nid-pub/claim-account',
+    'https://services.nidw.gov.bd/nid-pub/',
+    'https://services.nidw.gov.bd/nid-pub/recover-account',
+    'https://services.nidw.gov.bd/nid-pub/form/download',
+    'https://services.nidw.gov.bd/nid-pub/fees',
   ];
 
   Future<InitializationStatus> _initGoogleMobileAds() {
@@ -163,9 +174,9 @@ class _HomePageState extends State<HomePage> {
                     child: GridView.count(
                       crossAxisCount: 3,
                       childAspectRatio:
-                          0.7, // Adjust this value to control the item aspect ratio
+                          0.68, // Adjust this value to control the item aspect ratio
                       padding: const EdgeInsets.all(8.0),
-                      children: List.generate(5, (index) {
+                      children: List.generate(6, (index) {
                         return GestureDetector(
                           onTap: () {
                             // Handle the click event
@@ -180,58 +191,15 @@ class _HomePageState extends State<HomePage> {
                             //       'url': 'https://services.nidw.gov.bd/',
                             //       'title': title[index],
                             //     });
-                            if (index == 0) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Browser(
-                                    url:
-                                        'https://services.nidw.gov.bd/nid-pub/',
-                                    title: title[index],
-                                  ),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Browser(
+                                  url: url[index],
+                                  title: title[index],
                                 ),
-                              );
-                            } else if (index == 1) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Browser(
-                                    url: 'https://nidw.gov.bd/claim',
-                                    title: title[index],
-                                  ),
-                                ),
-                              );
-                            } else if (index == 2) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Browser(
-                                    url: 'https://nidw.gov.bd/login',
-                                    title: title[index],
-                                  ),
-                                ),
-                              );
-                            } else if (index == 3) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Browser(
-                                    url: 'https://nidw.gov.bd/download',
-                                    title: title[index],
-                                  ),
-                                ),
-                              );
-                            } else if (index == 4) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Browser(
-                                    url: 'https://nidw.gov.bd/fees',
-                                    title: title[index],
-                                  ),
-                                ),
-                              );
-                            }
+                              ),
+                            );
                           },
                           child: Card(
                             child: Column(

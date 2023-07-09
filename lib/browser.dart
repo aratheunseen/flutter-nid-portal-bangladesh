@@ -81,7 +81,7 @@ const String kTransparentBackgroundPage = '''
 class _BrowserState extends State<Browser> {
   late final WebViewController _controller;
   BannerAd? _bannerAd;
-  InterstitialAd? _interstitialAd;
+  // InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
@@ -104,21 +104,21 @@ class _BrowserState extends State<Browser> {
       ),
     ).load();
 
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          setState(() {
-            _interstitialAd = ad;
-          });
-          // Keep a reference to the ad so you can show it later.
-        },
-        onAdFailedToLoad: (err) {
-          // print('Failed to load an interstitial ad: ${err.message}');
-        },
-      ),
-    );
+    // InterstitialAd.load(
+    //   adUnitId: AdHelper.interstitialAdUnitId,
+    //   request: const AdRequest(),
+    //   adLoadCallback: InterstitialAdLoadCallback(
+    //     onAdLoaded: (ad) {
+    //       setState(() {
+    //         _interstitialAd = ad;
+    //       });
+    //       // Keep a reference to the ad so you can show it later.
+    //     },
+    //     onAdFailedToLoad: (err) {
+    //       // print('Failed to load an interstitial ad: ${err.message}');
+    //     },
+    //   ),
+    // );
 
     // #docregion platform_features
     late final PlatformWebViewControllerCreationParams params;
@@ -226,37 +226,14 @@ Page resource error:
           Expanded(
             child: WebViewWidget(controller: _controller),
           ),
-          Container(
-            height: 60,
-            color: Colors.black45,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    _controller.goBack();
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward, color: Colors.white),
-                  onPressed: () {
-                    _controller.goForward();
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.replay, color: Colors.white),
-                  onPressed: () {
-                    _controller.reload();
-                  },
-                ),
-              ],
-            ),
-          ),
           if (_bannerAd != null)
-            SizedBox(
+            Container(
               height: 60,
-              child: AdWidget(ad: _bannerAd!),
+              color: Colors.transparent,
+              child: SizedBox(
+                height: 60,
+                child: AdWidget(ad: _bannerAd!),
+              ),
             ),
           // if (_interstitialAd != null)
           //   ElevatedButton(
