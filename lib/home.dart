@@ -127,6 +127,17 @@ class _HomePageState extends State<HomePage> {
     return MobileAds.instance.initialize();
   }
 
+  int _getCrossAxisCount(BoxConstraints constraints) {
+    double screenWidth = constraints.maxWidth;
+    if (screenWidth > 1200) {
+      return 4; // Display 4 cards in a row for larger screens
+    } else if (screenWidth > 800) {
+      return 3; // Display 3 cards in a row for medium-sized screens
+    } else {
+      return 2; // Display 2 cards in a row for smaller screens
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,9 +161,13 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.info_outline_rounded),
-            onPressed: () {},
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: IconButton(
+              icon: const Icon(Icons.info_outline_rounded,
+                  color: Colors.black45, size: 24),
+              onPressed: () {},
+            ),
           ),
         ],
       ),
@@ -172,9 +187,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                   Expanded(
                     child: GridView.count(
-                      crossAxisCount: 3,
-                      childAspectRatio:
-                          0.68, // Adjust this value to control the item aspect ratio
+                      crossAxisCount: _getCrossAxisCount(BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width)),
+                      // childAspectRatio:
+                      //     0.68, // Adjust this value to control the item aspect ratio
                       padding: const EdgeInsets.all(8.0),
                       children: List.generate(6, (index) {
                         return GestureDetector(
@@ -182,15 +198,7 @@ class _HomePageState extends State<HomePage> {
                             // Handle the click event
                             if (_interstitialAd != null) {
                               _interstitialAd!.show();
-                            } else {
-                              // print('Interstitial ad is still loading...');
                             }
-
-                            // Navigator.pushNamed(context, '/browser',
-                            //     arguments: {
-                            //       'url': 'https://services.nidw.gov.bd/',
-                            //       'title': title[index],
-                            //     });
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -202,41 +210,58 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                           child: Card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Center(
-                                  child: Image.network(
-                                    image[index],
-                                    height: 90,
-                                    width: 90,
-                                    // width: double.infinity,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                                const SizedBox(height: 8.0),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    title[index],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14.0,
+                            child: SizedBox(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: FractionallySizedBox(
+                                      widthFactor: 1,
+                                      heightFactor: .75,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(4.0),
+                                        ),
+                                        child: Center(
+                                          child: Image.network(
+                                            image[index],
+                                            height: 90,
+                                            width: 90,
+                                            // width: double.infinity,
+                                            fit: BoxFit.fill,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 4.0),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    descrition[index],
-                                    style: const TextStyle(
-                                      color: Colors.black54,
-                                      fontSize: 10.0,
+                                  const SizedBox(height: 8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Text(
+                                      title[index],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14.0,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4.0),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0, vertical: 8.0),
+                                    child: Text(
+                                      descrition[index],
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 10.0,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -248,7 +273,7 @@ class _HomePageState extends State<HomePage> {
             } else {
               return const Center(
                 child: CircularProgressIndicator(
-                  color: Colors.blue,
+                  color: Colors.redAccent,
                 ),
               );
             }
