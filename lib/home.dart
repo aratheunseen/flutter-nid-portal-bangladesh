@@ -11,6 +11,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   BannerAd? _bannerAd;
+  // InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
@@ -30,39 +31,68 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     ).load();
+
+    // RewardedAd.load(
+    //   adUnitId: AdHelper.rewardedAdUnitId,
+    //   request: const AdRequest(),
+    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
+    //     onAdLoaded: (ad) {
+    //       // Keep a reference to the ad so you can show it later.
+    //       _rewardedAd = ad;
+    //       ad.fullScreenContentCallback = FullScreenContentCallback(
+    //         onAdShowedFullScreenContent: (ad) =>
+    //             print('ad onAdShowedFullScreenContent.'),
+    //         onAdDismissedFullScreenContent: (ad) {
+    //           print('$ad onAdDismissedFullScreenContent.');
+    //           ad.dispose();
+    //         },
+    //         onAdFailedToShowFullScreenContent: (ad, err) {
+    //           print('$ad onAdFailedToShowFullScreenContent: $err');
+    //           ad.dispose();
+    //         },
+    //       );
+    //     },
+    //     onAdFailedToLoad: (err) {
+    //       print('Failed to load a rewarded ad: $err');
+    //     },
+    //   ),
   }
 
-  @override
-  void dispose() {
-    _bannerAd?.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _bannerAd?.dispose();
+  //   super.dispose();
+  // }
+
+  // @override
+  // void dispose() {
+  //   _interstitialAd?.dispose();
+  //   super.dispose();
+  // }
 
   List<String> image = [
-    'https://img.freepik.com/premium-vector/give-blood-icon-vector-illustration_449764-150.jpg?w=826',
-    'https://img.freepik.com/premium-vector/give-blood-icon-vector-illustration_449764-150.jpg?w=827',
-    'https://img.freepik.com/premium-vector/give-blood-icon-vector-illustration_449764-150.jpg?w=826',
-    'https://img.freepik.com/premium-vector/give-blood-icon-vector-illustration_449764-150.jpg?w=829',
-    'https://img.freepik.com/premium-vector/give-blood-icon-vector-illustration_449764-150.jpg?w=826',
-    'https://img.freepik.com/premium-vector/give-blood-icon-vector-illustration_449764-150.jpg?w=830',
+    'https://cdn1.iconfinder.com/data/icons/business-and-finance-3d-s4/128/business_finance_applicant_application_job_recruitment_graduation_registration_register.png',
+    'https://cdn0.iconfinder.com/data/icons/metaverse-48/128/face_scan.png',
+    // 'https://cdn4.iconfinder.com/data/icons/security-339/128/Login_Page.png',
+    'https://cdn2.iconfinder.com/data/icons/business-1493/128/account_profile_id_id_card_identity_person_user.png',
+    'https://cdn1.iconfinder.com/data/icons/approval-2/128/Consent.png',
+    'https://cdn2.iconfinder.com/data/icons/business-1772/128/Untitled_design_9.png',
   ];
 
   List<String> title = [
-    'Blood Donation',
-    'Blood Request',
-    'Blood Bank',
-    'Blood Camp',
-    'Blood Donor',
-    'Blood Group',
+    'New Application',
+    'Claim Account',
+    'Manage Account',
+    'Form Download',
+    'Fees Calculator',
   ];
 
   List<String> descrition = [
-    'Donate blood and save life',
-    'Request blood and save life',
-    'Blood bank information',
-    'Blood camp information',
-    'Blood donor information',
-    'Blood group information',
+    'আপনার জাতীয় পরিচয়পত্র না থাকলে, নতুন নিবন্ধন করুন',
+    'আপনার যদি জাতীয় পরিচয়পত্র থাকে, তাহলে অ্যাকাউন্ট ক্লেইম করুন',
+    'আপনার যদি অনলাইন একাউন্ট থাকে তাহলে লগইন করুন',
+    ' হারানো, চুরি হওয়া বা তথ্য সংশোধনের আবেদন ফর্ম ডাউনলোড করুন',
+    'কার্ডের তথ্য পরিবর্তন অথবা সংশোধন অথবা কার্ড রিইস্যু ফি হিসাব করুন',
   ];
 
   Future<InitializationStatus> _initGoogleMobileAds() {
@@ -73,14 +103,27 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset(
-          'assets/images/logo-ec.png',
-          fit: BoxFit.cover,
-          height: 24,
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo-ec.png',
+              fit: BoxFit.cover,
+              height: 24,
+            ),
+            const SizedBox(width: 11.0),
+            const Text(
+              'NID Portal',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  overflow: TextOverflow.ellipsis,
+                  color: Colors.black54),
+            ),
+          ],
         ),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.info_outline_rounded),
             onPressed: () {},
           ),
         ],
@@ -91,8 +134,6 @@ class _HomePageState extends State<HomePage> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               return Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (_bannerAd != null)
                     Center(
@@ -103,11 +144,11 @@ class _HomePageState extends State<HomePage> {
                     ),
                   Expanded(
                     child: GridView.count(
-                      crossAxisCount: 2,
+                      crossAxisCount: 3,
                       childAspectRatio:
                           0.7, // Adjust this value to control the item aspect ratio
-                      padding: const EdgeInsets.all(16.0),
-                      children: List.generate(6, (index) {
+                      padding: const EdgeInsets.all(8.0),
+                      children: List.generate(5, (index) {
                         return GestureDetector(
                           onTap: () {
                             // Handle the click event
@@ -116,31 +157,34 @@ class _HomePageState extends State<HomePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Image.network(
-                                  image[index],
-                                  height: 150,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
+                                Center(
+                                  child: Image.network(
+                                    image[index],
+                                    height: 90,
+                                    width: 90,
+                                    // width: double.infinity,
+                                    fit: BoxFit.fill,
+                                  ),
                                 ),
                                 const SizedBox(height: 8.0),
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
+                                  padding: const EdgeInsets.only(left: 8.0),
                                   child: Text(
                                     title[index],
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 18.0,
+                                      fontSize: 14.0,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 4.0),
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
+                                  padding: const EdgeInsets.only(left: 8.0),
                                   child: Text(
                                     descrition[index],
                                     style: const TextStyle(
                                       color: Colors.grey,
-                                      fontSize: 12.0,
+                                      fontSize: 10.0,
                                     ),
                                   ),
                                 ),
@@ -151,6 +195,13 @@ class _HomePageState extends State<HomePage> {
                       }),
                     ),
                   ),
+                  if (_bannerAd != null)
+                    Center(
+                      child: SizedBox(
+                        height: 60,
+                        child: AdWidget(ad: _bannerAd!),
+                      ),
+                    ),
                 ],
               );
             } else {
