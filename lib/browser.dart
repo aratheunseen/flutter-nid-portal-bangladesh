@@ -26,15 +26,26 @@ class Browser extends StatefulWidget {
   State<Browser> createState() => _BrowserState();
 }
 
-class _BrowserState extends State<Browser> {
+class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   late final WebViewController _controller;
   BannerAd? _bannerAd;
   // InterstitialAd? _interstitialAd;
 
+  late AnimationController progressController;
+  bool determinate = false;
+
   @override
   void initState() {
+    progressController = AnimationController(
+      /// [AnimationController]s can be created with `vsync: this` because of
+      /// [TickerProviderStateMixin].
+      vsync: this,
+      duration: const Duration(seconds: 30),
+    )..addListener(() {
+        setState(() {});
+      });
+    progressController.repeat();
     super.initState();
-
     // ads
     BannerAd(
       adUnitId: AdHelper.bannerAdUnitId,
@@ -98,12 +109,15 @@ class _BrowserState extends State<Browser> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
+            progressController.value = progress / 100;
             // debugPrint('WebView is loading (progress : $progress%)');
           },
           onPageStarted: (String url) {
+            progressController.value = 0;
             // debugPrint('Page started loading: $url');
           },
           onPageFinished: (String url) {
+            progressController.value = 0;
             // debugPrint('Page finished loading: $url');
           },
           onWebResourceError: (WebResourceError error) {
@@ -191,6 +205,9 @@ class _BrowserState extends State<Browser> {
       ),
       body: Column(
         children: [
+          LinearProgressIndicator(
+            value: progressController.value,
+          ),
           Expanded(
             child: WebViewWidget(controller: _controller),
           ),

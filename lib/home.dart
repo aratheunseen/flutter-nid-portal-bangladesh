@@ -1,7 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:nid/about.dart';
 import 'package:nid/ads_config.dart';
 import 'package:nid/browser.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -91,7 +95,7 @@ class _HomePageState extends State<HomePage> {
     'assets/images/register.png',
     'assets/images/claim.png',
     'assets/images/login.png',
-    'assets/images/recovary.png',
+    'assets/images/recovery.png',
     'assets/images/forms.png',
     'assets/images/fees.png',
   ];
@@ -166,7 +170,10 @@ class _HomePageState extends State<HomePage> {
             child: IconButton(
               icon: const Icon(Icons.info_outline_rounded,
                   color: Colors.black45, size: 24),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const About()));
+              },
             ),
           ),
         ],
@@ -193,20 +200,37 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.all(8.0),
                     children: List.generate(6, (index) {
                       return GestureDetector(
-                        onTap: () {
-                          // Handle the click event
-                          if (_interstitialAd != null) {
-                            _interstitialAd!.show();
-                          }
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Browser(
-                                url: url[index],
-                                title: title[index],
+                        onTap: () async {
+                          final connectivityResult =
+                              await (Connectivity().checkConnectivity());
+                          // check internet connection
+                          if (connectivityResult == ConnectivityResult.mobile ||
+                              connectivityResult == ConnectivityResult.wifi ||
+                              connectivityResult ==
+                                  ConnectivityResult.ethernet ||
+                              connectivityResult == ConnectivityResult.vpn) {
+                            // Handle the click event
+                            if (_interstitialAd != null) {
+                              _interstitialAd!.show();
+                            }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Browser(
+                                  url: url[index],
+                                  title: title[index],
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          } else {
+                            // No-Internet Case
+                            // print('Not Connected');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('No Internet Connection!'),
+                              ),
+                            );
+                          }
                         },
                         child: Card(
                           child: SizedBox(
@@ -274,12 +298,6 @@ class _HomePageState extends State<HomePage> {
                     }),
                   ),
                 ),
-                if (_bannerAd != null)
-                  SizedBox(
-                    height: 50, // Adjust the height as per your requirement
-                    child: AdWidget(
-                        ad: _bannerAd!), // Replace BannerAd with your actual AdWidget
-                  ),
               ]);
             } else {
               return const Center(
