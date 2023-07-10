@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nid/home.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:nid/ads/ads_config.dart';
+import 'package:nid/ads_config.dart';
 
 AppOpenAd? _appOpenAd;
 bool _isShowingAd = false;
