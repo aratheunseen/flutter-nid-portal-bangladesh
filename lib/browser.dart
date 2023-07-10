@@ -156,7 +156,12 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         'Toaster',
         onMessageReceived: (JavaScriptMessage message) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message.message)),
+            SnackBar(
+                content: Text(message.message),
+                backgroundColor: Colors.black54,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10))),
           );
         },
       )

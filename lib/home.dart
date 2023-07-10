@@ -226,9 +226,18 @@ class _HomePageState extends State<HomePage> {
                             // No-Internet Case
                             // print('Not Connected');
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('No Internet Connection!'),
-                              ),
+                              SnackBar(
+                                  content:
+                                      const Text('No Internet Connection!'),
+                                  action: SnackBarAction(
+                                    label: 'Turn on',
+                                    onPressed: () {
+                                      // Code to execute.
+                                    },
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10))),
                             );
                           }
                         },
