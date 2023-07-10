@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:nid/ads/ads_config.dart';
+import 'package:nid/ads_config.dart';
 import 'package:nid/browser.dart';
 
 class HomePage extends StatefulWidget {
@@ -88,12 +88,12 @@ class _HomePageState extends State<HomePage> {
   // }
 
   List<String> image = [
-    'https://cdn1.iconfinder.com/data/icons/business-and-finance-3d-s4/128/business_finance_applicant_application_job_recruitment_graduation_registration_register.png',
-    'https://cdn0.iconfinder.com/data/icons/metaverse-48/128/face_scan.png',
-    'https://cdn2.iconfinder.com/data/icons/business-1493/128/account_profile_id_id_card_identity_person_user.png',
-    'https://cdn4.iconfinder.com/data/icons/security-339/128/Login_Page.png',
-    'https://cdn1.iconfinder.com/data/icons/approval-2/128/Consent.png',
-    'https://cdn2.iconfinder.com/data/icons/business-1772/128/Untitled_design_9.png',
+    'assets/images/register.png',
+    'assets/images/claim.png',
+    'assets/images/login.png',
+    'assets/images/recovary.png',
+    'assets/images/forms.png',
+    'assets/images/fees.png',
   ];
 
   List<String> title = [
@@ -176,100 +176,111 @@ class _HomePageState extends State<HomePage> {
           future: _initGoogleMobileAds(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return Column(
-                children: [
-                  if (_bannerAd != null)
-                    Center(
-                      child: SizedBox(
-                        height: 60,
-                        child: AdWidget(ad: _bannerAd!),
-                      ),
-                    ),
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisCount: _getCrossAxisCount(BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width)),
-                      // childAspectRatio:
-                      //     0.68, // Adjust this value to control the item aspect ratio
-                      padding: const EdgeInsets.all(8.0),
-                      children: List.generate(6, (index) {
-                        return GestureDetector(
-                          onTap: () {
-                            // Handle the click event
-                            if (_interstitialAd != null) {
-                              _interstitialAd!.show();
-                            }
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Browser(
-                                  url: url[index],
-                                  title: title[index],
-                                ),
-                              ),
-                            );
-                          },
-                          child: Card(
-                            child: SizedBox(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: FractionallySizedBox(
-                                      widthFactor: 1,
-                                      heightFactor: .75,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.transparent,
-                                          borderRadius:
-                                              BorderRadius.circular(4.0),
-                                        ),
-                                        child: Center(
-                                          child: Image.network(
-                                            image[index],
-                                            height: 90,
-                                            width: 90,
-                                            // width: double.infinity,
-                                            fit: BoxFit.fill,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8.0),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Text(
-                                      title[index],
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14.0,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4.0),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 8.0),
-                                    child: Text(
-                                      descrition[index],
-                                      style: const TextStyle(
-                                        color: Colors.black54,
-                                        fontSize: 10.0,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
+              return Column(children: [
+                if (_bannerAd != null)
+                  Center(
+                    child: SizedBox(
+                      height: 1,
+                      child: AdWidget(ad: _bannerAd!),
                     ),
                   ),
-                ],
-              );
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: _getCrossAxisCount(BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width)),
+                    // childAspectRatio:
+                    //     0.68, // Adjust this value to control the item aspect ratio
+                    padding: const EdgeInsets.all(8.0),
+                    children: List.generate(6, (index) {
+                      return GestureDetector(
+                        onTap: () {
+                          // Handle the click event
+                          if (_interstitialAd != null) {
+                            _interstitialAd!.show();
+                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Browser(
+                                url: url[index],
+                                title: title[index],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          child: SizedBox(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: FractionallySizedBox(
+                                    widthFactor: 1,
+                                    heightFactor: .75,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.transparent,
+                                        borderRadius:
+                                            BorderRadius.circular(4.0),
+                                      ),
+                                      child: Center(
+                                        child: Image.asset(
+                                          image[index],
+                                          fit: BoxFit.cover,
+                                          height: 90,
+                                          width: 90,
+                                        ),
+
+                                        // Image.network(
+                                        //   image[index],
+                                        //   height: 90,
+                                        //   width: 90,
+                                        //   // width: double.infinity,
+                                        //   fit: BoxFit.fill,
+                                        // ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8.0),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Text(
+                                    title[index],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.0,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4.0),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 8.0),
+                                  child: Text(
+                                    descrition[index],
+                                    style: const TextStyle(
+                                      color: Colors.black54,
+                                      fontSize: 10.0,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                if (_bannerAd != null)
+                  SizedBox(
+                    height: 50, // Adjust the height as per your requirement
+                    child: AdWidget(
+                        ad: _bannerAd!), // Replace BannerAd with your actual AdWidget
+                  ),
+              ]);
             } else {
               return const Center(
                 child: CircularProgressIndicator(
