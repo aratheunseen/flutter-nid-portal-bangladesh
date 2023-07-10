@@ -6,6 +6,7 @@ import 'package:nid/about.dart';
 import 'package:nid/ads_config.dart';
 import 'package:nid/browser.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:app_settings/app_settings.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -232,7 +233,9 @@ class _HomePageState extends State<HomePage> {
                                   action: SnackBarAction(
                                     label: 'Turn on',
                                     onPressed: () {
-                                      // Code to execute.
+                                      // CGoto wifi settings
+                                      AppSettings.openAppSettings(
+                                          type: AppSettingsType.wifi);
                                     },
                                   ),
                                   behavior: SnackBarBehavior.floating,
