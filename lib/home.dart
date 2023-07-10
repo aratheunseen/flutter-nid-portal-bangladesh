@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nid/about.dart';
-import 'package:nid/ads/ads_config.dart';
+import 'package:nid/ads_config.dart';
 import 'package:nid/browser.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_settings/app_settings.dart';
