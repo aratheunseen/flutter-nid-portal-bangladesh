@@ -1,18 +1,11 @@
-// import 'package:flutter/material.dart';
-// import 'package:webview_flutter/webview_flutter.dart';
+// ignore_for_file: depend_on_referenced_packages
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:nid/ads_config.dart';
+import 'package:nid/ads/ads_config.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-// #docregion platform_imports
-// Import for Android features.
-// ignore: depend_on_referenced_packages
 import 'package:webview_flutter_android/webview_flutter_android.dart';
-// Import for iOS features.
-// ignore: depend_on_referenced_packages
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class Browser extends StatefulWidget {
@@ -29,7 +22,7 @@ class Browser extends StatefulWidget {
 class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   late final WebViewController _controller;
   BannerAd? _bannerAd;
-  // InterstitialAd? _interstitialAd;
+  InterstitialAd? _interstitialAd;
 
   late AnimationController progressController;
   bool determinate = false;
@@ -37,8 +30,6 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   @override
   void initState() {
     progressController = AnimationController(
-      /// [AnimationController]s can be created with `vsync: this` because of
-      /// [TickerProviderStateMixin].
       vsync: this,
       duration: const Duration(seconds: 30),
     )..addListener(() {
@@ -46,7 +37,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
       });
     progressController.repeat();
     super.initState();
-    // ads
+
     BannerAd(
       adUnitId: AdHelper.bannerAdUnitId,
       request: const AdRequest(),
@@ -63,23 +54,30 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
       ),
     ).load();
 
-    // InterstitialAd.load(
-    //   adUnitId: AdHelper.interstitialAdUnitId,
-    //   request: const AdRequest(),
-    //   adLoadCallback: InterstitialAdLoadCallback(
-    //     onAdLoaded: (ad) {
-    //       setState(() {
-    //         _interstitialAd = ad;
-    //       });
-    //       // Keep a reference to the ad so you can show it later.
-    //     },
-    //     onAdFailedToLoad: (err) {
-    //       // print('Failed to load an interstitial ad: ${err.message}');
-    //     },
-    //   ),
-    // );
+    InterstitialAd.load(
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _interstitialAd = ad;
+          });
+        },
+        onAdFailedToLoad: (err) {
+          // print('Failed to load an interstitial ad: ${err.message}');
+        },
+      ),
+    );
 
-    // #docregion platform_features
+    Future<void> launchOutside(Uri url) async {
+      if (!await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      )) {
+        throw Exception('Could not launch $url');
+      }
+    }
+
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
@@ -92,16 +90,6 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
 
     final WebViewController controller =
         WebViewController.fromPlatformCreationParams(params);
-    // #enddocregion platform_features
-
-    Future<void> launchOutside(Uri url) async {
-      if (!await launchUrl(
-        url,
-        mode: LaunchMode.externalApplication,
-      )) {
-        throw Exception('Could not launch $url');
-      }
-    }
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -145,6 +133,11 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
               launchOutside(url);
               return NavigationDecision.prevent;
             }
+            if (request.url.contains("download")) {
+              final Uri url = Uri.parse(request.url);
+              launchOutside(url);
+              return NavigationDecision.prevent;
+            }
             return NavigationDecision.navigate;
           },
           onUrlChange: (UrlChange change) {
@@ -167,22 +160,14 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
       )
       ..loadRequest(Uri.parse(widget.url));
 
-    // #docregion platform_features
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
       (controller.platform as AndroidWebViewController)
           .setMediaPlaybackRequiresUserGesture(false);
     }
-    // #enddocregion platform_features
 
     _controller = controller;
   }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // Implement some initialization operations here.
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -196,13 +181,13 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         ),
         title: Center(
           child: Text(widget.title,
-              style: const TextStyle(color: Colors.black45, fontSize: 18)),
+              style: const TextStyle(color: Colors.black45, fontSize: 15)),
         ),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.black45),
             onPressed: () {
-              // Implement refresh here.
+              if (_interstitialAd != null) _interstitialAd!.show();
               _controller.reload();
             },
           ),
@@ -225,19 +210,8 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
                 child: AdWidget(ad: _bannerAd!),
               ),
             ),
-          // if (_interstitialAd != null)
-          //   ElevatedButton(
-          //     onPressed: () {
-          //       _interstitialAd!.show();
-          //     },
-          //     child: const Text('Show Interstitial'),
-          //   ),
         ],
       ),
     );
-    // const Center(
-    //   child: Text('This is a browser.',
-    //       style: TextStyle(fontSize: 24, color: Colors.black45)),
-    // ),
   }
 }

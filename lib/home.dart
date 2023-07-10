@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nid/about.dart';
-import 'package:nid/ads_config.dart';
+import 'package:nid/ads/ads_config.dart';
 import 'package:nid/browser.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_settings/app_settings.dart';
@@ -46,7 +46,6 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _interstitialAd = ad;
           });
-          // Keep a reference to the ad so you can show it later.
         },
         onAdFailedToLoad: (err) {
           // print('Failed to load an interstitial ad: ${err.message}');
@@ -80,17 +79,12 @@ class _HomePageState extends State<HomePage> {
     //   ),
   }
 
-  // @override
-  // void dispose() {
-  //   _bannerAd?.dispose();
-  //   super.dispose();
-  // }
-
-  // @override
-  // void dispose() {
-  //   _interstitialAd?.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    _interstitialAd?.dispose();
+    super.dispose();
+  }
 
   List<String> image = [
     'assets/images/register.png',
@@ -122,7 +116,7 @@ class _HomePageState extends State<HomePage> {
   List<String> url = [
     'https://services.nidw.gov.bd/nid-pub/register-account',
     'https://services.nidw.gov.bd/nid-pub/claim-account',
-    'https://services.nidw.gov.bd/nid-pub/',
+    'https://services.nidw.gov.bd/nid-pub/#form',
     'https://services.nidw.gov.bd/nid-pub/recover-account',
     'https://services.nidw.gov.bd/nid-pub/form/download',
     'https://services.nidw.gov.bd/nid-pub/fees',
@@ -135,11 +129,11 @@ class _HomePageState extends State<HomePage> {
   int _getCrossAxisCount(BoxConstraints constraints) {
     double screenWidth = constraints.maxWidth;
     if (screenWidth > 1200) {
-      return 4; // Display 4 cards in a row for larger screens
+      return 4;
     } else if (screenWidth > 800) {
-      return 3; // Display 3 cards in a row for medium-sized screens
+      return 3;
     } else {
-      return 2; // Display 2 cards in a row for smaller screens
+      return 2;
     }
   }
 
@@ -186,31 +180,30 @@ class _HomePageState extends State<HomePage> {
             if (snapshot.connectionState == ConnectionState.done) {
               return Column(children: [
                 if (_bannerAd != null)
-                  Center(
+                  Container(
+                    alignment: Alignment.center,
+                    height: 60,
+                    color: Colors.transparent,
                     child: SizedBox(
-                      height: 1,
-                      child: AdWidget(ad: _bannerAd!),
+                      height: 60,
+                      child: AdWidget(ad: _bannerAd!, key: UniqueKey()),
                     ),
                   ),
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: _getCrossAxisCount(BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width)),
-                    // childAspectRatio:
-                    //     0.68, // Adjust this value to control the item aspect ratio
                     padding: const EdgeInsets.all(8.0),
                     children: List.generate(6, (index) {
                       return GestureDetector(
                         onTap: () async {
                           final connectivityResult =
                               await (Connectivity().checkConnectivity());
-                          // check internet connection
                           if (connectivityResult == ConnectivityResult.mobile ||
                               connectivityResult == ConnectivityResult.wifi ||
                               connectivityResult ==
                                   ConnectivityResult.ethernet ||
                               connectivityResult == ConnectivityResult.vpn) {
-                            // Handle the click event
                             if (_interstitialAd != null) {
                               _interstitialAd!.show();
                             }
@@ -224,8 +217,6 @@ class _HomePageState extends State<HomePage> {
                               ),
                             );
                           } else {
-                            // No-Internet Case
-                            // print('Not Connected');
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                   content:
@@ -233,7 +224,6 @@ class _HomePageState extends State<HomePage> {
                                   action: SnackBarAction(
                                     label: 'Turn on',
                                     onPressed: () {
-                                      // CGoto wifi settings
                                       AppSettings.openAppSettings(
                                           type: AppSettingsType.wifi);
                                     },
@@ -266,14 +256,6 @@ class _HomePageState extends State<HomePage> {
                                           height: 90,
                                           width: 90,
                                         ),
-
-                                        // Image.network(
-                                        //   image[index],
-                                        //   height: 90,
-                                        //   width: 90,
-                                        //   // width: double.infinity,
-                                        //   fit: BoxFit.fill,
-                                        // ),
                                       ),
                                     ),
                                   ),
