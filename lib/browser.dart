@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nid/ads_config.dart';
+import 'package:nid/home.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -97,6 +98,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
+            _cleanRegistrationPage();
             progressController.value = progress / 100;
             // debugPrint('WebView is loading (progress : $progress%)');
           },
@@ -109,6 +111,15 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
             // debugPrint('Page finished loading: $url');
           },
           onWebResourceError: (WebResourceError error) {
+            SnackBar(
+                content: const Text('Something went wrong!'),
+                backgroundColor: Colors.black54,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)));
+
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const HomePage()));
             //   debugPrint('''
             //   Page resource error:
             //   code: ${error.errorCode}
@@ -167,6 +178,17 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
     }
 
     _controller = controller;
+  }
+
+  // remove header and footer by injecting javascript code
+  Future<void> _cleanRegistrationPage() async {
+    await _controller.runJavaScript(
+        "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsById('container')[0].classList.remove=' wrapper-padding-bottom';})()");
+  }
+
+  Future<void> _cleanLoginPage() async {
+    await _controller.runJavaScript(
+        "javascript:(function() { document.getElementsBySelector('div.seven:nth-child(2) > p:nth-child(1)')[0].style.display='none';document.getElementsByClassName('feedback-circle-mobile feedback-circle-absolute')[0].style.display='none'; document.getElementsByClassName('banner')[0].style.display='none'; document.getElementsByClassName('segment-claim-register-mobile')[0].style.display='none'; document.getElementsByClassName('info')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none';})()");
   }
 
   @override

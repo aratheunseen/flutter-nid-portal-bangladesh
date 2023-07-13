@@ -122,7 +122,7 @@ class _HomePageState extends State<HomePage> {
   List<String> url = [
     'https://services.nidw.gov.bd/nid-pub/register-account',
     'https://services.nidw.gov.bd/nid-pub/claim-account',
-    'https://services.nidw.gov.bd/nid-pub/#form',
+    'https://services.nidw.gov.bd/nid-pub',
     'https://services.nidw.gov.bd/nid-pub/card-status/',
     'https://services.nidw.gov.bd/nid-pub/recover-account',
     'https://services.nidw.gov.bd/nid-pub/form/download',
