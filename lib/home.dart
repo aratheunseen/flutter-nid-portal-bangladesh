@@ -2,28 +2,42 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:nid/about.dart';
-import 'package:nid/ads_config.dart';
-import 'package:nid/browser.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:nid/admanager.dart';
+import 'package:nid/browser.dart';
+import 'package:nid/about.dart';
+import 'constants.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({
+    Key? key,
+    required this.title,
+    required this.analytics,
+    required this.observer,
+  }) : super(key: key);
+
+  final String title;
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  // Declare Ad variables
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
     super.initState();
+
+    // Start :: BannerAd
     BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId,
+      adUnitId: AdManager.bannerAdUnitId,
       request: const AdRequest(),
       size: AdSize.fullBanner,
       listener: BannerAdListener(
@@ -37,9 +51,11 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     ).load();
+    // End :: BannerAd
 
+    // Start :: InterstitialAd
     InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
+      adUnitId: AdManager.interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -52,7 +68,9 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+    // End :: InterstitialAd
 
+    // Start :: RewardedAd
     // RewardedAd.load(
     //   adUnitId: AdHelper.rewardedAdUnitId,
     //   request: const AdRequest(),
@@ -77,58 +95,19 @@ class _HomePageState extends State<HomePage> {
     //       print('Failed to load a rewarded ad: $err');
     //     },
     //   ),
+    // );
+    // End :: RewardedAd
   }
 
+  // Start :: Dispose Ad
   @override
   void dispose() {
     _bannerAd?.dispose();
     _interstitialAd?.dispose();
+    // _rewardedAd?.dispose();
     super.dispose();
   }
-
-  List<String> image = [
-    'assets/images/register.png',
-    'assets/images/claim.png',
-    'assets/images/login.png',
-    'assets/images/card.png',
-    'assets/images/recovery.png',
-    'assets/images/forms.png',
-    'assets/images/fees.png',
-    'assets/images/faq.png',
-  ];
-
-  List<String> title = [
-    'New Application',
-    'Claim Account',
-    'Manage Account',
-    'Smart Card Status',
-    'Recover Account',
-    'Download Forms',
-    'Fees Calculator',
-    'FAQ',
-  ];
-
-  List<String> descrition = [
-    'আপনার জাতীয় পরিচয়পত্র না থাকলে, নতুন নিবন্ধন করুন',
-    'আপনার যদি জাতীয় পরিচয়পত্র থাকে, তাহলে অ্যাকাউন্ট ক্লেইম করুন',
-    'আপনার যদি অনলাইন একাউন্ট থাকে তাহলে লগইন করুন',
-    'আপনি যদি স্মার্ট কার্ড না পেয়ে থাকেন, তাহলে স্মার্ট কার্ডের অবস্থা জানুন',
-    'আপনার অ্যাকাউন্ট আছে, কিন্তু পাসওয়ার্ড ভুলে গিয়েছেন? পুনরুদ্ধার করুন',
-    'হারানো, চুরি হওয়া বা তথ্য সংশোধনের আবেদন ফর্ম ডাউনলোড করুন',
-    'কার্ডের তথ্য পরিবর্তন অথবা সংশোধন অথবা কার্ড রিইস্যু ফি হিসাব করুন',
-    'জাতীয় পরিচয়পত্র সংক্রান্ত সাধারণ প্রশ্ন উত্তর জানুন',
-  ];
-
-  List<String> url = [
-    'https://services.nidw.gov.bd/nid-pub/register-account',
-    'https://services.nidw.gov.bd/nid-pub/claim-account',
-    'https://services.nidw.gov.bd/nid-pub',
-    'https://services.nidw.gov.bd/nid-pub/card-status/',
-    'https://services.nidw.gov.bd/nid-pub/recover-account',
-    'https://services.nidw.gov.bd/nid-pub/form/download',
-    'https://services.nidw.gov.bd/nid-pub/fees',
-    'https://services.nidw.gov.bd/nid-pub/faq',
-  ];
+  // End :: Dispose Ad
 
   Future<InitializationStatus> _initGoogleMobileAds() {
     return MobileAds.instance.initialize();

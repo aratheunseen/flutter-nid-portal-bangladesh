@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:nid/ads_config.dart';
-import 'package:nid/home.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:nid/admanager.dart';
 
 class Browser extends StatefulWidget {
   const Browser({Key? key, required this.title, required this.url})
@@ -21,32 +21,39 @@ class Browser extends StatefulWidget {
 }
 
 class _BrowserState extends State<Browser> with TickerProviderStateMixin {
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+
+  FirebaseAnalyticsObserver observer =
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
+
+  // Declare WebView Controller
   late final WebViewController _controller;
+
+  // Declare Ad variables
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
 
+  // Declare ProgressController
   late AnimationController progressController;
   bool determinate = false;
 
   @override
   void initState() {
-    progressController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 30),
-    )..addListener(() {
-        setState(() {});
-      });
-    progressController.repeat();
-    super.initState();
-
+    // Start :: LoadAd
     BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId,
+      adUnitId: AdManager.bannerAdUnitId,
       request: const AdRequest(),
       size: AdSize.fullBanner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           setState(() {
             _bannerAd = ad as BannerAd;
+            FirebaseAnalytics.instance.logEvent(
+              name: "ad_loaded",
+              parameters: {
+                "full_text": "Banner Ad Loaded",
+              },
+            );
           });
         },
         onAdFailedToLoad: (ad, err) {
@@ -56,20 +63,39 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
     ).load();
 
     InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
+      adUnitId: AdManager.interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           setState(() {
             _interstitialAd = ad;
+            FirebaseAnalytics.instance.logEvent(
+              name: "ad_loaded",
+              parameters: {
+                "full_text": "Interstitial Ad Loaded",
+              },
+            );
           });
         },
         onAdFailedToLoad: (err) {
-          // print('Failed to load an interstitial ad: ${err.message}');
+          _interstitialAd = null;
         },
       ),
     );
+    // End :: LoadAd
 
+    // Start :: ProgressController
+    progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 30),
+    )..addListener(() {
+        setState(() {});
+      });
+    progressController.repeat();
+    super.initState();
+    // End :: ProgressController
+
+    // Start :: UrlLauncher
     Future<void> launchOutside(Uri url) async {
       if (!await launchUrl(
         url,
@@ -78,7 +104,9 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         throw Exception('Could not launch $url');
       }
     }
+    // End :: UrlLauncher
 
+    // Start :: WebViewController
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
@@ -98,17 +126,14 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
-            _cleanRegistrationPage();
+            _cleanUI();
             progressController.value = progress / 100;
-            // debugPrint('WebView is loading (progress : $progress%)');
           },
           onPageStarted: (String url) {
             progressController.value = 0;
-            // debugPrint('Page started loading: $url');
           },
           onPageFinished: (String url) {
             progressController.value = 0;
-            // debugPrint('Page finished loading: $url');
           },
           onWebResourceError: (WebResourceError error) {
             SnackBar(
@@ -117,35 +142,51 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)));
-
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const HomePage()));
-            //   debugPrint('''
-            //   Page resource error:
-            //   code: ${error.errorCode}
-            //   description: ${error.description}
-            //   errorType: ${error.errorType}
-            //   isForMainFrame: ${error.isForMainFrame}
-            // ''');
           },
-          onNavigationRequest: (NavigationRequest request) {
+
+          // Handle Requests
+          onNavigationRequest: (NavigationRequest request) async {
             if (request.url.startsWith('https://play.google.com')) {
               final Uri url = Uri.parse(request.url);
+              await FirebaseAnalytics.instance.logEvent(
+                name: "go_to_playstore",
+                parameters: {
+                  "full_text": request.url,
+                },
+              );
               launchOutside(url);
               return NavigationDecision.prevent;
             }
             if (request.url.startsWith('https://apps.apple.com')) {
               final Uri url = Uri.parse(request.url);
+              await FirebaseAnalytics.instance.logEvent(
+                name: "go_to_appstore",
+                parameters: {
+                  "full_text": request.url,
+                },
+              );
               launchOutside(url);
               return NavigationDecision.prevent;
             }
             if (request.url.contains(".pdf")) {
               final Uri url = Uri.parse(request.url);
+              await FirebaseAnalytics.instance.logEvent(
+                name: "forms_download",
+                parameters: {
+                  "full_text": request.url,
+                },
+              );
               launchOutside(url);
               return NavigationDecision.prevent;
             }
             if (request.url.contains("download")) {
               final Uri url = Uri.parse(request.url);
+              await FirebaseAnalytics.instance.logEvent(
+                name: "download_from_page",
+                parameters: {
+                  "full_text": request.url,
+                },
+              );
               launchOutside(url);
               return NavigationDecision.prevent;
             }
@@ -178,18 +219,16 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
     }
 
     _controller = controller;
+    // End :: WebViewController
   }
 
-  // remove header and footer by injecting javascript code
-  Future<void> _cleanRegistrationPage() async {
+  // Start :: RemoveHeader&Footer
+  Future<void> _cleanUI() async {
     await _controller.runJavaScript(
-        "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsById('container')[0].classList.remove=' wrapper-padding-bottom';})()");
+        "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none';})()");
   }
-
-  Future<void> _cleanLoginPage() async {
-    await _controller.runJavaScript(
-        "javascript:(function() { document.getElementsBySelector('div.seven:nth-child(2) > p:nth-child(1)')[0].style.display='none';document.getElementsByClassName('feedback-circle-mobile feedback-circle-absolute')[0].style.display='none'; document.getElementsByClassName('banner')[0].style.display='none'; document.getElementsByClassName('segment-claim-register-mobile')[0].style.display='none'; document.getElementsByClassName('info')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none';})()");
-  }
+  //  document.getElementsByClassName('banner')[0].style.display='none'; document.getElementsByClassName('segment-claim-register-mobile')[0].style.display='none'; document.getElementsByClassName('info')[0].style.display='none'; document.getElementsByClassName('feedback-circle-mobile feedback-circle-absolute')[0].style.display='none';
+  // End :: RemoveHeader&Footer
 
   @override
   Widget build(BuildContext context) {
@@ -201,18 +240,34 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
             Navigator.pop(context);
           },
         ),
-        title: Center(
-          child: Text(widget.title,
-              style: const TextStyle(color: Colors.black45, fontSize: 15)),
-        ),
+        title: Text(widget.title,
+            style: const TextStyle(color: Colors.black45, fontSize: 15)),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black45),
+            icon: Image.asset('assets/images/bn.png',
+                width: 25, height: 25, color: Colors.black45),
+            onPressed: () {
+              if (_interstitialAd != null) _interstitialAd!.show();
+
+              if (widget.url.contains("locale=en")) {
+                final String url =
+                    widget.url.replaceAll("locale=en", "locale=bn");
+                _controller.loadRequest(Uri.parse(url));
+              }
+              // else if (widget.url.contains("locale=bn")) {
+              //   final String url =
+              //       widget.url.replaceAll("locale=bn", "locale=en");
+              //   _controller.loadRequest(Uri.parse(url));
+              // }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_outlined, color: Colors.black45),
             onPressed: () {
               if (_interstitialAd != null) _interstitialAd!.show();
               _controller.reload();
             },
-          ),
+          )
         ],
       ),
       body: Column(
@@ -220,6 +275,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
           LinearProgressIndicator(
             value: progressController.value,
           ),
+          // Text(widget.url),
           Expanded(
             child: WebViewWidget(controller: _controller),
           ),

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "774089458894",
+    "project_id": "nid-portal",
+    "storage_bucket": "nid-portal.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774089458894:android:c8f642bcbbeed4aee37c9f",
+        "android_client_info": {
+          "package_name": "bd.gov.nidw.portal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774089458894-f6g2p6n2jchonog12eegmu50av48gtm6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMx45NHS21PEYrJac-ykXrqpIZ_uHZXRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774089458894-f6g2p6n2jchonog12eegmu50av48gtm6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
