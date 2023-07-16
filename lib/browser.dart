@@ -1,5 +1,3 @@
-// ignore_for_file: depend_on_referenced_packages
-
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -10,22 +8,24 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:nid/admanager.dart';
 
 class Browser extends StatefulWidget {
-  const Browser({Key? key, required this.title, required this.url})
+  const Browser(
+      {Key? key,
+      required this.title,
+      required this.url,
+      this.analytics,
+      this.observer})
       : super(key: key);
 
   final String title;
   final String url;
+  final FirebaseAnalytics? analytics;
+  final FirebaseAnalyticsObserver? observer;
 
   @override
   State<Browser> createState() => _BrowserState();
 }
 
 class _BrowserState extends State<Browser> with TickerProviderStateMixin {
-  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-
-  FirebaseAnalyticsObserver observer =
-      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
-
   // Declare WebView Controller
   late final WebViewController _controller;
 
@@ -39,6 +39,12 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'browswer-page',
+    );
+    FirebaseAnalytics.instance
+        .logEvent(name: widget.title, parameters: {"url": widget.url});
+
     // Start :: LoadAd
     BannerAd(
       adUnitId: AdManager.bannerAdUnitId,
@@ -48,16 +54,22 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         onAdLoaded: (ad) {
           setState(() {
             _bannerAd = ad as BannerAd;
-            FirebaseAnalytics.instance.logEvent(
-              name: "ad_loaded",
-              parameters: {
-                "full_text": "Banner Ad Loaded",
-              },
-            );
           });
+          widget.analytics!.logEvent(
+            name: "browser_banner_ad_loaded",
+            parameters: {
+              "full_text": "Browser's Banner Ad Loaded",
+            },
+          );
         },
         onAdFailedToLoad: (ad, err) {
           ad.dispose();
+          widget.analytics!.logEvent(
+            name: "browser_banner_ad_failed_to_load",
+            parameters: {
+              "full_text": "Browser's Banner Ad Failed To Load",
+            },
+          );
         },
       ),
     ).load();
@@ -69,16 +81,22 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         onAdLoaded: (ad) {
           setState(() {
             _interstitialAd = ad;
-            FirebaseAnalytics.instance.logEvent(
-              name: "ad_loaded",
-              parameters: {
-                "full_text": "Interstitial Ad Loaded",
-              },
-            );
           });
+          widget.analytics!.logEvent(
+            name: "browser_interstitial_ad_loaded",
+            parameters: {
+              "full_text": "Browser's Interstitial Ad Loaded",
+            },
+          );
         },
         onAdFailedToLoad: (err) {
           _interstitialAd = null;
+          widget.analytics!.logEvent(
+            name: "browser_interstitial_ad_failed_to_load",
+            parameters: {
+              "full_text": "Browser's Interstitial Ad Failed To Load",
+            },
+          );
         },
       ),
     );
@@ -103,6 +121,12 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
       )) {
         throw Exception('Could not launch $url');
       }
+      widget.analytics!.logEvent(
+        name: "browser_launch_outside",
+        parameters: {
+          "full_text": "Go OutSide: $url",
+        },
+      );
     }
     // End :: UrlLauncher
 
@@ -170,30 +194,33 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
             }
             if (request.url.contains(".pdf")) {
               final Uri url = Uri.parse(request.url);
-              await FirebaseAnalytics.instance.logEvent(
-                name: "forms_download",
-                parameters: {
-                  "full_text": request.url,
-                },
-              );
+              FirebaseAnalytics.instance.logEvent(
+                  name: "download_pdf", parameters: {"full_text": request.url});
+
               launchOutside(url);
               return NavigationDecision.prevent;
             }
             if (request.url.contains("download")) {
               final Uri url = Uri.parse(request.url);
+              launchOutside(url);
               await FirebaseAnalytics.instance.logEvent(
                 name: "download_from_page",
                 parameters: {
                   "full_text": request.url,
                 },
               );
-              launchOutside(url);
               return NavigationDecision.prevent;
             }
             return NavigationDecision.navigate;
           },
           onUrlChange: (UrlChange change) {
             // debugPrint('url change to ${change.url}');
+            FirebaseAnalytics.instance.logEvent(
+              name: "browser_url_change",
+              parameters: {
+                "full_text": "Url change to ${change.url}",
+              },
+            );
           },
         ),
       )

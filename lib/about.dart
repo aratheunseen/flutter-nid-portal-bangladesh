@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 class About extends StatefulWidget {
   const About({super.key});
@@ -15,9 +17,18 @@ Future<void> launchOutside(Uri url) async {
   )) {
     throw Exception('Could not launch $url');
   }
+  FirebaseAnalytics.instance.logEvent(name: "rate_this_app");
 }
 
 class _AboutState extends State<About> {
+  @override
+  void initState() {
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'about-page',
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,6 +44,7 @@ class _AboutState extends State<About> {
               onPressed: () async {
                 await launchOutside(Uri.parse(
                     'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
+                FirebaseAnalytics.instance.logEvent(name: "top_rate_this_app");
               },
               icon: const Icon(Icons.rate_review_rounded,
                   color: Color.fromARGB(255, 65, 57, 30), size: 24),
@@ -60,7 +72,7 @@ class _AboutState extends State<About> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'Version 1.4.23',
+                      'Version 1.4.24',
                       style: TextStyle(fontSize: 14),
                     ),
                   ],
@@ -80,6 +92,8 @@ class _AboutState extends State<About> {
                 onPressed: () async {
                   await launchOutside(Uri.parse(
                       'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
+                  FirebaseAnalytics.instance
+                      .logEvent(name: "bottom_rate_this_app");
                 },
                 child: const Text(
                   'Rate this application',

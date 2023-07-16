@@ -6,8 +6,6 @@ import 'package:nid/firebase_options.dart';
 import 'package:nid/home.dart';
 import 'package:nid/admanager.dart';
 
-typedef ScreenNameExtractor = String? Function(RouteSettings settings);
-
 // Start :: AppOpenAd
 AppOpenAd? _appOpenAd;
 bool _isShowingAd = false;
@@ -20,8 +18,20 @@ Future<void> loadAd() async {
     adLoadCallback: AppOpenAdLoadCallback(onAdLoaded: (ad) {
       _appOpenAd = ad;
       _appOpenAd!.show();
+      FirebaseAnalytics.instance.logEvent(
+        name: 'app_open_ad_loaded',
+        parameters: {
+          "full_text": "App Open Ad Loaded",
+        },
+      );
     }, onAdFailedToLoad: (error) {
       _appOpenAd = null;
+      FirebaseAnalytics.instance.logEvent(
+        name: 'app_open_ad_failed_to_load',
+        parameters: {
+          "full_text": "App Open Ad Failed To Load",
+        },
+      );
     }),
   );
 }
@@ -29,24 +39,54 @@ Future<void> loadAd() async {
 void showAd() {
   if (_appOpenAd == null) {
     loadAd();
+    FirebaseAnalytics.instance.logEvent(
+      name: 'app_open_ad_null',
+      parameters: {
+        "full_text": "App Open Ad Null",
+      },
+    );
     return;
   }
   if (_isShowingAd) {
+    FirebaseAnalytics.instance.logEvent(
+      name: 'app_open_ad_already_showing',
+      parameters: {
+        "full_text": "App Open Ad Already Showing",
+      },
+    );
     return;
   }
   _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
     onAdShowedFullScreenContent: (ad) {
       _isShowingAd = true;
+      FirebaseAnalytics.instance.logEvent(
+        name: 'app_open_ad_show',
+        parameters: {
+          "full_text": "App Open Ad Show",
+        },
+      );
     },
     onAdFailedToShowFullScreenContent: (ad, error) {
       _isShowingAd = false;
       ad.dispose();
       _appOpenAd = null;
+      FirebaseAnalytics.instance.logEvent(
+        name: 'app_open_ad_failed_to_show',
+        parameters: {
+          "full_text": "App Open Ad Failed To Show",
+        },
+      );
     },
     onAdDismissedFullScreenContent: (ad) {
       _isShowingAd = false;
       ad.dispose();
       _appOpenAd = null;
+      FirebaseAnalytics.instance.logEvent(
+        name: 'app_open_ad_dismissed',
+        parameters: {
+          "full_text": "App Open Ad Dismissed",
+        },
+      );
     },
   );
   _appOpenAd!.show();

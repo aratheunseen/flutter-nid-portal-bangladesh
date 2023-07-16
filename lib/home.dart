@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -9,6 +7,8 @@ import 'package:nid/admanager.dart';
 import 'package:nid/browser.dart';
 import 'package:nid/about.dart';
 import 'constants.dart';
+
+typedef ScreenNameExtractor = String? Function(RouteSettings settings);
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -21,6 +21,7 @@ class HomePage extends StatefulWidget {
   final String title;
   final FirebaseAnalytics analytics;
   final FirebaseAnalyticsObserver observer;
+  String? defaultNameExtractor(RouteSettings settings) => settings.name;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -33,6 +34,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'home-page',
+    );
+
     super.initState();
 
     // Start :: BannerAd
@@ -45,9 +50,21 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _bannerAd = ad as BannerAd;
           });
+          widget.analytics.logEvent(
+            name: "home_bannerad_loaded",
+            parameters: {
+              "full_text": "Home BannerAd loaded successfully!",
+            },
+          );
         },
         onAdFailedToLoad: (ad, err) {
           ad.dispose();
+          widget.analytics.logEvent(
+            name: "home_bannerad_failedtoload",
+            parameters: {
+              "full_text": "Home BannerAd failed to load!",
+            },
+          );
         },
       ),
     ).load();
@@ -62,9 +79,20 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _interstitialAd = ad;
           });
+          widget.analytics.logEvent(
+            name: "home_interstitialad_loaded",
+            parameters: {
+              "full_text": "Home InterstitialAd loaded successfully!",
+            },
+          );
         },
         onAdFailedToLoad: (err) {
-          // print('Failed to load an interstitial ad: ${err.message}');
+          widget.analytics.logEvent(
+            name: "home_interstitialad_failedtoload",
+            parameters: {
+              "full_text": "Home InterstitialAd failed to load!",
+            },
+          );
         },
       ),
     );
@@ -106,6 +134,12 @@ class _HomePageState extends State<HomePage> {
     _interstitialAd?.dispose();
     // _rewardedAd?.dispose();
     super.dispose();
+    widget.analytics.logEvent(
+      name: "home_ad_dispose",
+      parameters: {
+        "full_text": "Home Ad disposed successfully!",
+      },
+    );
   }
   // End :: Dispose Ad
 
@@ -194,16 +228,20 @@ class _HomePageState extends State<HomePage> {
                             if (_interstitialAd != null) {
                               _interstitialAd!.show();
                             }
+                            // ignore: use_build_context_synchronously
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => Browser(
                                   url: url[index],
                                   title: title[index],
+                                  analytics: widget.analytics,
+                                  observer: widget.observer,
                                 ),
                               ),
                             );
                           } else {
+                            // ignore: use_build_context_synchronously
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                   content:
