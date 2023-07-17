@@ -299,28 +299,33 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return HomePage(
-              title: 'NID Portal',
-              analytics: FirebaseAnalytics.instance,
-              observer: FirebaseAnalyticsObserver(
-                  analytics: FirebaseAnalytics.instance));
-        }));
-        return true;
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomePage(
+                    title: "Nid Portal",
+                    analytics: FirebaseAnalytics.instance,
+                    observer: FirebaseAnalyticsObserver(
+                        analytics: FirebaseAnalytics.instance))), (r) {
+          return false;
+        });
+        return false;
       },
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black45),
-            onPressed: () {
-              // Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return HomePage(
-                    title: 'NID Portal',
-                    analytics: FirebaseAnalytics.instance,
-                    observer: FirebaseAnalyticsObserver(
-                        analytics: FirebaseAnalytics.instance));
-              }));
+            onPressed: () async {
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => HomePage(
+                          title: "Nid Portal",
+                          analytics: FirebaseAnalytics.instance,
+                          observer: FirebaseAnalyticsObserver(
+                              analytics: FirebaseAnalytics.instance))), (r) {
+                return false;
+              });
             },
           ),
           title: Text(widget.title,
