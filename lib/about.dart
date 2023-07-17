@@ -60,62 +60,77 @@ class _AboutState extends State<About> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child:
-                  // app icon and version
-                  Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/icon.png',
-                      width: 100,
-                      height: 100,
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'NID Portal: Bangladesh',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Version 1.4.25',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // rate this app
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(60),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+        body: WillPopScope(
+          onWillPop: () async {
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => HomePage(
+                        title: "Nid Portal",
+                        analytics: FirebaseAnalytics.instance,
+                        observer: FirebaseAnalyticsObserver(
+                            analytics: FirebaseAnalytics.instance))), (r) {
+              return false;
+            });
+            return false;
+          },
+          child: Column(
+            children: [
+              Expanded(
+                child:
+                    // app icon and version
+                    Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/icon.png',
+                        width: 100,
+                        height: 100,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'NID Portal: Bangladesh',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Version 1.4.26',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
                   ),
                 ),
-                onPressed: () async {
-                  await launchOutside(Uri.parse(
-                      'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
-                  FirebaseAnalytics.instance
-                      .logEvent(name: "bottom_rate_this_app");
-                },
-                child: const Text(
-                  'Rate this application',
-                  style: TextStyle(
-                      fontSize: 16, color: Color.fromARGB(255, 65, 57, 30)),
-                  textAlign: TextAlign.center,
-                  softWrap: true,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              ),
+              // rate this app
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(60),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () async {
+                    await launchOutside(Uri.parse(
+                        'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
+                    FirebaseAnalytics.instance
+                        .logEvent(name: "bottom_rate_this_app");
+                  },
+                  child: const Text(
+                    'Rate this application',
+                    style: TextStyle(
+                        fontSize: 16, color: Color.fromARGB(255, 65, 57, 30)),
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ));
   }
 }

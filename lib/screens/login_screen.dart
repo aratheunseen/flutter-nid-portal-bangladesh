@@ -45,7 +45,7 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
   @override
   void initState() {
     FirebaseAnalytics.instance.logScreenView(
-      screenName: 'browswer-login-page',
+      screenName: 'browser-login-page',
     );
     FirebaseAnalytics.instance
         .logEvent(name: widget.title, parameters: {"url": widget.url});
@@ -298,6 +298,18 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
               'https://services.nidw.gov.bd/nid-pub/citizen-home/update-mobile/'));
         }
         break;
+      case 'logout':
+        {
+          late final WebViewCookieManager cookieManager =
+              WebViewCookieManager();
+          void clearCookies() async {
+            await cookieManager.clearCookies();
+          }
+
+          clearCookies();
+          _controller.reload();
+        }
+        break;
     }
   }
 
@@ -389,6 +401,10 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
                   const PopupMenuItem(
                     value: 'update_phone',
                     child: Text('Update Phone Number'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Text('Logout'),
                   ),
                 ];
               },

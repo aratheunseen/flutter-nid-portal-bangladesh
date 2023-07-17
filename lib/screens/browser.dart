@@ -44,7 +44,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   @override
   void initState() {
     FirebaseAnalytics.instance.logScreenView(
-      screenName: 'browswer-page',
+      screenName: 'browser-page',
     );
     FirebaseAnalytics.instance
         .logEvent(name: widget.title, parameters: {"url": widget.url});
@@ -273,6 +273,28 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   }
   // End :: RemoveHeader&Footer
 
+  void moreHandler(value) {
+    switch (value) {
+      case 'reload':
+        {
+          _controller.reload();
+        }
+        break;
+      case 'logout':
+        {
+          late final WebViewCookieManager cookieManager =
+              WebViewCookieManager();
+          void clearCookies() async {
+            await cookieManager.clearCookies();
+          }
+
+          clearCookies();
+          _controller.reload();
+        }
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -337,11 +359,29 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
                 // }
               },
             ),
-            IconButton(
-                icon: const Icon(Icons.refresh_outlined, color: Colors.black45),
-                onPressed: () {
-                  _controller.reload();
-                })
+            PopupMenuButton(
+              // constraints: const BoxConstraints.expand(height: 300),
+              onSelected: moreHandler,
+              itemBuilder: (BuildContext context) {
+                return [
+                  const PopupMenuItem(
+                    value: 'reload',
+                    child: Text(
+                      'Reload',
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Text('Clear Session'),
+                  ),
+                ];
+              },
+            ),
+            // IconButton(
+            //     icon: const Icon(Icons.refresh_outlined, color: Colors.black45),
+            //     onPressed: () {
+            //       _controller.reload();
+            //     })
           ],
         ),
         body: Column(
