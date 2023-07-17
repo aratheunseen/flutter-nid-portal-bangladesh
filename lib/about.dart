@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nid/home.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
@@ -33,8 +34,17 @@ class _AboutState extends State<About> {
     return Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.black45),
+            onPressed: () => Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => HomePage(
+                        title: "Nid Portal",
+                        analytics: FirebaseAnalytics.instance,
+                        observer: FirebaseAnalyticsObserver(
+                            analytics: FirebaseAnalytics.instance))), (r) {
+              return false;
+            }),
           ),
           title: const Text('About',
               style: TextStyle(color: Colors.black45, fontSize: 18)),
@@ -71,7 +81,7 @@ class _AboutState extends State<About> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'Version 1.4.24',
+                      'Version 1.4.25',
                       style: TextStyle(fontSize: 14),
                     ),
                   ],

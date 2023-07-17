@@ -1,5 +1,9 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:nid/home.dart';
+import 'package:nid/screens/login_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -155,6 +159,19 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
           },
           onPageStarted: (String url) {
             progressController.value = 0;
+            if (url
+                .allMatches("https://services.nidw.gov.bd/nid-pub/")
+                .isNotEmpty) {
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const LoginPageBrowser(
+                            title: "Manage Account",
+                            url: "https://services.nidw.gov.bd/nid-pub/",
+                          )), (r) {
+                return false;
+              });
+            }
           },
           onPageFinished: (String url) {
             progressController.value = 0;
@@ -252,70 +269,107 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   // Start :: RemoveHeader&Footer
   Future<void> _cleanUI() async {
     await _controller.runJavaScript(
-        "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none';})()");
+        "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none';document.getElementsByClassName('banner')[0].style.display='none';})()");
   }
-  //  document.getElementsByClassName('banner')[0].style.display='none'; document.getElementsByClassName('segment-claim-register-mobile')[0].style.display='none'; document.getElementsByClassName('info')[0].style.display='none'; document.getElementsByClassName('feedback-circle-mobile feedback-circle-absolute')[0].style.display='none';
   // End :: RemoveHeader&Footer
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black45),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: Text(widget.title,
-            style: const TextStyle(color: Colors.black45, fontSize: 15)),
-        actions: <Widget>[
-          IconButton(
-            icon: Image.asset('assets/images/bn.png',
-                width: 25, height: 25, color: Colors.black45),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return HomePage(
+              title: 'NID Portal',
+              analytics: FirebaseAnalytics.instance,
+              observer: FirebaseAnalyticsObserver(
+                  analytics: FirebaseAnalytics.instance));
+        }));
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black45),
             onPressed: () {
-              if (_interstitialAd != null) _interstitialAd!.show();
-
-              if (widget.url.contains("locale=en")) {
-                final String url =
-                    widget.url.replaceAll("locale=en", "locale=bn");
-                _controller.loadRequest(Uri.parse(url));
-              }
-              // else if (widget.url.contains("locale=bn")) {
-              //   final String url =
-              //       widget.url.replaceAll("locale=bn", "locale=en");
-              //   _controller.loadRequest(Uri.parse(url));
-              // }
+              // Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return HomePage(
+                    title: 'NID Portal',
+                    analytics: FirebaseAnalytics.instance,
+                    observer: FirebaseAnalyticsObserver(
+                        analytics: FirebaseAnalytics.instance));
+              }));
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh_outlined, color: Colors.black45),
-            onPressed: () {
-              if (_interstitialAd != null) _interstitialAd!.show();
-              _controller.reload();
-            },
-          )
-        ],
-      ),
-      body: Column(
-        children: [
-          LinearProgressIndicator(
-            value: progressController.value,
-          ),
-          // Text(widget.url),
-          Expanded(
-            child: WebViewWidget(controller: _controller),
-          ),
-          if (_bannerAd != null)
-            Container(
-              height: 60,
-              color: Colors.transparent,
-              child: SizedBox(
-                height: 60,
-                child: AdWidget(ad: _bannerAd!),
-              ),
+          title: Text(widget.title,
+              style: const TextStyle(color: Colors.black45, fontSize: 15)),
+          actions: <Widget>[
+            IconButton(
+              icon: Image.asset('assets/images/bn.png',
+                  width: 25, height: 25, color: Colors.black45),
+              onPressed: () {
+                if (widget.url.contains("locale=en")) {
+                  final String url =
+                      widget.url.replaceAll("locale=en", "locale=bn");
+                  _controller.loadRequest(Uri.parse(url));
+                }
+                if (_interstitialAd != null) {
+                  _interstitialAd!.show();
+                  FirebaseAnalytics.instance.logEvent(
+                    name: "browser_interstitialad_show",
+                    parameters: {
+                      "full_text":
+                          "Browser InterstitialAd showed successfully!",
+                    },
+                  );
+                } else {
+                  FirebaseAnalytics.instance.logEvent(
+                    name: "browser_interstitialad_null",
+                    parameters: {
+                      "full_text": "Browser InterstitialAd is null!",
+                    },
+                  );
+                }
+                // else if (widget.url.contains("locale=bn")) {
+                //   final String url =
+                //       widget.url.replaceAll("locale=bn", "locale=en");
+                //   _controller.loadRequest(Uri.parse(url));
+                // }
+              },
             ),
-        ],
+            IconButton(
+                icon: const Icon(Icons.refresh_outlined, color: Colors.black45),
+                onPressed: () {
+                  _controller.reload();
+                })
+          ],
+        ),
+        body: Column(
+          children: [
+            LinearProgressIndicator(
+              value: progressController.value,
+            ),
+            // Text(widget.url),
+            Expanded(
+              child: WebViewWidget(controller: _controller),
+            ),
+            if (_bannerAd != null)
+              Container(
+                height: 60,
+                color: Colors.transparent,
+                child: SizedBox(
+                  height: 60,
+                  child: AdWidget(ad: _bannerAd!),
+                ),
+              ),
+          ],
+        ),
+        // floatingActionButton: FloatingActionButton(
+        //   child: const Icon(Icons.refresh_outlined),
+        //   onPressed: () {
+        //     _controller.reload();
+        //   },
+        // ),
       ),
     );
   }

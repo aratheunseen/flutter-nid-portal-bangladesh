@@ -34,7 +34,7 @@ List<String> descrition = [
 List<String> url = [
   'https://services.nidw.gov.bd/nid-pub/register-account?locale=en',
   'https://services.nidw.gov.bd/nid-pub/claim-account?locale=en',
-  'https://services.nidw.gov.bd/nid-pub/#form',
+  'https://services.nidw.gov.bd/nid-pub/',
   'https://services.nidw.gov.bd/nid-pub/card-status/?locale=en',
   'https://services.nidw.gov.bd/nid-pub/recover-account?locale=en',
   'https://services.nidw.gov.bd/nid-pub/form/download?locale=en',

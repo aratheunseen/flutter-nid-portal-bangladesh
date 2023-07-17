@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:nid/admanager.dart';
-import 'package:nid/browser.dart';
+import 'package:nid/screens/browser.dart';
 import 'package:nid/about.dart';
 import 'constants.dart';
 
@@ -187,145 +189,166 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.info_outline_rounded,
                   color: Colors.black45, size: 24),
               onPressed: () {
-                Navigator.push(context,
+                Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => const About()));
               },
             ),
           ),
         ],
       ),
-      body: Scaffold(
-        body: FutureBuilder(
-          future: _initGoogleMobileAds(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Column(children: [
-                if (_bannerAd != null)
-                  Container(
-                    alignment: Alignment.center,
-                    height: 60,
-                    color: Colors.white,
-                    child: SizedBox(
+      body: WillPopScope(
+        onWillPop: () async {
+          return exit(0);
+        },
+        child: Scaffold(
+          body: FutureBuilder(
+            future: _initGoogleMobileAds(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return Column(children: [
+                  if (_bannerAd != null)
+                    Container(
+                      alignment: Alignment.center,
                       height: 60,
-                      child: AdWidget(ad: _bannerAd!, key: UniqueKey()),
+                      color: Colors.white,
+                      child: SizedBox(
+                        height: 60,
+                        child: AdWidget(ad: _bannerAd!, key: UniqueKey()),
+                      ),
                     ),
-                  ),
-                Expanded(
-                  child: GridView.count(
-                    crossAxisCount: _getCrossAxisCount(BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width)),
-                    padding: const EdgeInsets.all(8.0),
-                    children: List.generate(8, (index) {
-                      return GestureDetector(
-                        onTap: () async {
-                          final connectivityResult =
-                              await (Connectivity().checkConnectivity());
-                          if (connectivityResult == ConnectivityResult.mobile ||
-                              connectivityResult == ConnectivityResult.wifi ||
-                              connectivityResult ==
-                                  ConnectivityResult.ethernet ||
-                              connectivityResult == ConnectivityResult.vpn) {
-                            if (_interstitialAd != null) {
-                              _interstitialAd!.show();
-                            }
-                            // ignore: use_build_context_synchronously
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Browser(
-                                  url: url[index],
-                                  title: title[index],
-                                  analytics: widget.analytics,
-                                  observer: widget.observer,
-                                ),
-                              ),
-                            );
-                          } else {
-                            // ignore: use_build_context_synchronously
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content:
-                                      const Text('No Internet Connection!'),
-                                  action: SnackBarAction(
-                                    label: 'Turn on',
-                                    onPressed: () {
-                                      AppSettings.openAppSettings(
-                                          type: AppSettingsType.wifi);
-                                    },
+                  Expanded(
+                    child: GridView.count(
+                      crossAxisCount: _getCrossAxisCount(BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width)),
+                      padding: const EdgeInsets.all(8.0),
+                      children: List.generate(8, (index) {
+                        return GestureDetector(
+                          onTap: () async {
+                            final connectivityResult =
+                                await (Connectivity().checkConnectivity());
+                            if (connectivityResult ==
+                                    ConnectivityResult.mobile ||
+                                connectivityResult == ConnectivityResult.wifi ||
+                                connectivityResult ==
+                                    ConnectivityResult.ethernet ||
+                                connectivityResult == ConnectivityResult.vpn) {
+                              // ignore: use_build_context_synchronously
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Browser(
+                                    url: url[index],
+                                    title: title[index],
+                                    analytics: widget.analytics,
+                                    observer: widget.observer,
                                   ),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10))),
-                            );
-                          }
-                        },
-                        child: Card(
-                          child: SizedBox(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: FractionallySizedBox(
-                                    widthFactor: 1,
-                                    heightFactor: .75,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.transparent,
+                                ),
+                              );
+                              if (_interstitialAd != null) {
+                                _interstitialAd!.show();
+                                widget.analytics.logEvent(
+                                  name: "home_interstitialad_show",
+                                  parameters: {
+                                    "full_text":
+                                        "Home InterstitialAd showed successfully!",
+                                  },
+                                );
+                              } else {
+                                widget.analytics.logEvent(
+                                  name: "home_interstitialad_null",
+                                  parameters: {
+                                    "full_text": "Home InterstitialAd is null!",
+                                  },
+                                );
+                              }
+                            } else {
+                              // ignore: use_build_context_synchronously
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content:
+                                        const Text('No Internet Connection!'),
+                                    action: SnackBarAction(
+                                      label: 'Turn on',
+                                      onPressed: () {
+                                        AppSettings.openAppSettings(
+                                            type: AppSettingsType.wifi);
+                                      },
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
                                         borderRadius:
-                                            BorderRadius.circular(4.0),
-                                      ),
-                                      child: Center(
-                                        child: Image.asset(
-                                          image[index],
-                                          fit: BoxFit.cover,
-                                          height: 90,
-                                          width: 90,
+                                            BorderRadius.circular(10))),
+                              );
+                            }
+                          },
+                          child: Card(
+                            child: SizedBox(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: FractionallySizedBox(
+                                      widthFactor: 1,
+                                      heightFactor: .75,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(4.0),
+                                        ),
+                                        child: Center(
+                                          child: Image.asset(
+                                            image[index],
+                                            fit: BoxFit.cover,
+                                            height: 90,
+                                            width: 90,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 8.0),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Text(
-                                    title[index],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14.0,
+                                  const SizedBox(height: 8.0),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Text(
+                                      title[index],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14.0,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 4.0),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 8.0),
-                                  child: Text(
-                                    descrition[index],
-                                    style: const TextStyle(
-                                      color: Colors.black54,
-                                      fontSize: 10.0,
+                                  const SizedBox(height: 4.0),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0, vertical: 8.0),
+                                    child: Text(
+                                      descrition[index],
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 10.0,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ),
                   ),
-                ),
-              ]);
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.redAccent,
-                ),
-              );
-            }
-          },
+                ]);
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.redAccent,
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
