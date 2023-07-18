@@ -153,14 +153,12 @@ class _HomePageState extends State<HomePage> {
                 return Column(children: [
                   // Start :: BannerAd -----------------------------------------
                   if (_bannerAd != null)
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: SafeArea(
-                        child: SizedBox(
-                          width: _bannerAd!.size.width.toDouble(),
-                          height: _bannerAd!.size.height.toDouble(),
-                          child: AdWidget(ad: _bannerAd!),
-                        ),
+                    Container(
+                      height: 60,
+                      color: Colors.transparent,
+                      child: SizedBox(
+                        height: 60,
+                        child: AdWidget(ad: _bannerAd!),
                       ),
                     ),
                   // End :: BannerAd -------------------------------------------

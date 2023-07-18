@@ -40,6 +40,10 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await showAppOpenAd();
 
+  FirebaseAnalytics.instance.logScreenView(
+    screenName: 'Root',
+  );
+
   runApp(const MyApp());
 }
 

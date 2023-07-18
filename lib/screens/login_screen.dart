@@ -1,5 +1,7 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, use_build_context_synchronously
 
+import 'package:app_settings/app_settings.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nid/screens/browser.dart';
@@ -186,15 +188,13 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
             if (!url
                 .allMatches("https://services.nidw.gov.bd/nid-pub/")
                 .isNotEmpty) {
-              Navigator.pushAndRemoveUntil(
+              Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => Browser(
                             title: "Nid Portal",
                             url: url,
-                          )), (r) {
-                return false;
-              });
+                          )));
             }
           },
           onPageFinished: (String url) {
@@ -335,88 +335,110 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
         Navigator.of(context).popUntil((route) => route.isFirst);
         return true;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black45),
-            onPressed: () async {
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
-          ),
-          title: Text(widget.title,
-              style: const TextStyle(color: Colors.black45, fontSize: 15)),
-          actions: <Widget>[
-            IconButton(
-                icon: Image.asset('assets/images/bn.png',
-                    width: 25, height: 25, color: Colors.black45),
-                onPressed: () {
-                  if (widget.url.contains("locale=en")) {
-                    final String url =
-                        widget.url.replaceAll("locale=en", "locale=bn");
-                    _controller.loadRequest(Uri.parse(url));
-                  } else {
-                    final String url = widget.url
-                        .replaceAll(widget.url, "${widget.url}?locale=bn");
-                    _controller.loadRequest(Uri.parse(url));
-                  }
-                }),
-            PopupMenuButton(
-              onSelected: moreHandler,
-              itemBuilder: (BuildContext context) {
-                return [
-                  const PopupMenuItem(
-                    value: 'reload',
-                    child: Text(
-                      'Reload',
-                    ),
+      child: GestureDetector(
+        onVerticalDragDown: (_) async {
+          final connectivityResult = await (Connectivity().checkConnectivity());
+          if (connectivityResult == ConnectivityResult.none) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: const Text('No Internet Connection!'),
+                  action: SnackBarAction(
+                    label: 'Turn on',
+                    onPressed: () {
+                      AppSettings.openAppSettings(type: AppSettingsType.wifi);
+                    },
                   ),
-                  const PopupMenuItem(
-                    value: 'change_password',
-                    child: Text(
-                      'Change Password',
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'update_phone',
-                    child: Text('Update Phone Number'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'logout',
-                    child: Text('Logout'),
-                  ),
-                ];
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10))),
+            );
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black45),
+              onPressed: () async {
+                Navigator.of(context).popUntil((route) => route.isFirst);
               },
             ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Start :: LinearProgressIndicator -----------------------------
-            LinearProgressIndicator(
-              value: progressController.value,
-            ),
-            // End :: LinearProgressIndicator -------------------------------
+            title: Text(widget.title,
+                style: const TextStyle(color: Colors.black45, fontSize: 15)),
+            actions: <Widget>[
+              IconButton(
+                  icon: Image.asset('assets/images/bn.png',
+                      width: 25, height: 25, color: Colors.black45),
+                  onPressed: () {
+                    if (widget.url.contains("locale=en")) {
+                      final String url =
+                          widget.url.replaceAll("locale=en", "locale=bn");
+                      _controller.loadRequest(Uri.parse(url));
+                    } else {
+                      final String url = widget.url
+                          .replaceAll(widget.url, "${widget.url}?locale=bn");
+                      _controller.loadRequest(Uri.parse(url));
+                    }
+                  }),
+              PopupMenuButton(
+                onSelected: moreHandler,
+                itemBuilder: (BuildContext context) {
+                  return [
+                    const PopupMenuItem(
+                      value: 'reload',
+                      child: Text(
+                        'Reload',
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'change_password',
+                      child: Text(
+                        'Change Password',
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'update_phone',
+                      child: Text('Update Phone Number'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'logout',
+                      child: Text('Logout'),
+                    ),
+                  ];
+                },
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              // Start :: LinearProgressIndicator -----------------------------
+              LinearProgressIndicator(
+                value: progressController.value,
+              ),
+              // End :: LinearProgressIndicator -------------------------------
 
-            // Start :: WebView ---------------------------------------------
-            Expanded(
-              child: WebViewWidget(controller: _controller),
-            ),
-            // End :: WebView -----------------------------------------------
+              // Start :: WebView ---------------------------------------------
+              Expanded(
+                child: WebViewWidget(controller: _controller),
+              ),
+              // End :: WebView -----------------------------------------------
 
-            // Start :: BannerAd --------------------------------------------
-            if (_bannerAd != null)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SafeArea(
-                  child: SizedBox(
-                    width: _bannerAd!.size.width.toDouble(),
-                    height: _bannerAd!.size.height.toDouble(),
-                    child: AdWidget(ad: _bannerAd!),
+              // Start :: BannerAd --------------------------------------------
+              if (_bannerAd != null)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 60,
+                    color: Colors.transparent,
+                    child: SizedBox(
+                      height: 60,
+                      child: AdWidget(ad: _bannerAd!),
+                    ),
                   ),
                 ),
-              ),
-            // End :: BannerAd ----------------------------------------------
-          ],
+              // End :: BannerAd ----------------------------------------------
+            ],
+          ),
         ),
       ),
     );
