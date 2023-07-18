@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,10 +9,9 @@ import 'package:app_settings/app_settings.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:nid/admanager.dart';
 import 'package:nid/screens/browser.dart';
-import 'package:nid/about.dart';
-import 'constants.dart';
-
-typedef ScreenNameExtractor = String? Function(RouteSettings settings);
+import 'package:nid/screens/about.dart';
+import 'package:nid/screens/login_screen.dart';
+import '../constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -30,27 +31,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Declare Ad variables
+  Future<InitializationStatus> _initGoogleMobileAds() {
+    return MobileAds.instance.initialize();
+  }
+
+  // Start :: BannerAd --------------------------------------------------------
+
   BannerAd? _bannerAd;
-  InterstitialAd? _interstitialAd;
 
-  @override
-  void initState() {
-    FirebaseAnalytics.instance.logScreenView(
-      screenName: 'home-page',
-    );
-
-    super.initState();
-
-    // Start :: BannerAd
-    BannerAd(
+  void loadBannerAd() {
+    _bannerAd = BannerAd(
       adUnitId: AdManager.bannerAdUnitId,
       request: const AdRequest(),
-      size: AdSize.fullBanner,
+      size: AdSize.banner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           setState(() {
-            _bannerAd = ad as BannerAd;
+            _bannerAd = ad as BannerAd?;
           });
           widget.analytics.logEvent(
             name: "home_bannerad_loaded",
@@ -60,94 +57,44 @@ class _HomePageState extends State<HomePage> {
           );
         },
         onAdFailedToLoad: (ad, err) {
+          _bannerAd = null;
           ad.dispose();
           widget.analytics.logEvent(
             name: "home_bannerad_failedtoload",
             parameters: {
-              "full_text": "Home BannerAd failed to load!",
+              "full_text": err.toString(),
             },
           );
         },
       ),
-    ).load();
-    // End :: BannerAd
-
-    // Start :: InterstitialAd
-    InterstitialAd.load(
-      adUnitId: AdManager.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          setState(() {
-            _interstitialAd = ad;
-          });
-          widget.analytics.logEvent(
-            name: "home_interstitialad_loaded",
-            parameters: {
-              "full_text": "Home InterstitialAd loaded successfully!",
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          widget.analytics.logEvent(
-            name: "home_interstitialad_failedtoload",
-            parameters: {
-              "full_text": "Home InterstitialAd failed to load!",
-            },
-          );
-        },
-      ),
-    );
-    // End :: InterstitialAd
-
-    // Start :: RewardedAd
-    // RewardedAd.load(
-    //   adUnitId: AdHelper.rewardedAdUnitId,
-    //   request: const AdRequest(),
-    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
-    //     onAdLoaded: (ad) {
-    //       // Keep a reference to the ad so you can show it later.
-    //       _rewardedAd = ad;
-    //       ad.fullScreenContentCallback = FullScreenContentCallback(
-    //         onAdShowedFullScreenContent: (ad) =>
-    //             print('ad onAdShowedFullScreenContent.'),
-    //         onAdDismissedFullScreenContent: (ad) {
-    //           print('$ad onAdDismissedFullScreenContent.');
-    //           ad.dispose();
-    //         },
-    //         onAdFailedToShowFullScreenContent: (ad, err) {
-    //           print('$ad onAdFailedToShowFullScreenContent: $err');
-    //           ad.dispose();
-    //         },
-    //       );
-    //     },
-    //     onAdFailedToLoad: (err) {
-    //       print('Failed to load a rewarded ad: $err');
-    //     },
-    //   ),
-    // );
-    // End :: RewardedAd
+    )..load();
+    // End :: BannerAd --------------------------------------------------------
   }
 
-  // Start :: Dispose Ad
+  @override
+  void initState() {
+    super.initState();
+
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'HomePage',
+    );
+
+    loadBannerAd();
+  }
+
+  // Start :: Dispose Ad ------------------------------------------------------
   @override
   void dispose() {
     _bannerAd?.dispose();
-    _interstitialAd?.dispose();
-    // _rewardedAd?.dispose();
     super.dispose();
     widget.analytics.logEvent(
-      name: "home_ad_dispose",
+      name: "home_bannerad_dispose",
       parameters: {
-        "full_text": "Home Ad disposed successfully!",
+        "full_text": "Home BannerAd disposed successfully!",
       },
     );
   }
-  // End :: Dispose Ad
-
-  Future<InitializationStatus> _initGoogleMobileAds() {
-    return MobileAds.instance.initialize();
-  }
+  // End :: Dispose Ad --------------------------------------------------------
 
   int _getCrossAxisCount(BoxConstraints constraints) {
     double screenWidth = constraints.maxWidth;
@@ -189,7 +136,7 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.info_outline_rounded,
                   color: Colors.black45, size: 24),
               onPressed: () {
-                Navigator.pushReplacement(context,
+                Navigator.push(context,
                     MaterialPageRoute(builder: (context) => const About()));
               },
             ),
@@ -197,25 +144,28 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: WillPopScope(
-        onWillPop: () async {
-          return exit(0);
-        },
+        onWillPop: () async => exit(0),
         child: Scaffold(
           body: FutureBuilder(
             future: _initGoogleMobileAds(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return Column(children: [
+                  // Start :: BannerAd -----------------------------------------
                   if (_bannerAd != null)
-                    Container(
-                      alignment: Alignment.center,
-                      height: 60,
-                      color: Colors.white,
-                      child: SizedBox(
-                        height: 60,
-                        child: AdWidget(ad: _bannerAd!, key: UniqueKey()),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: SafeArea(
+                        child: SizedBox(
+                          width: _bannerAd!.size.width.toDouble(),
+                          height: _bannerAd!.size.height.toDouble(),
+                          child: AdWidget(ad: _bannerAd!),
+                        ),
                       ),
                     ),
+                  // End :: BannerAd -------------------------------------------
+
+                  // Start :: GridView -----------------------------------------
                   Expanded(
                     child: GridView.count(
                       crossAxisCount: _getCrossAxisCount(BoxConstraints(
@@ -232,37 +182,32 @@ class _HomePageState extends State<HomePage> {
                                 connectivityResult ==
                                     ConnectivityResult.ethernet ||
                                 connectivityResult == ConnectivityResult.vpn) {
-                              // ignore: use_build_context_synchronously
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Browser(
-                                    url: url[index],
-                                    title: title[index],
-                                    analytics: widget.analytics,
-                                    observer: widget.observer,
+                              if (index == 2) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoginPageBrowser(
+                                      url: url[index],
+                                      title: title[index],
+                                      analytics: widget.analytics,
+                                      observer: widget.observer,
+                                    ),
                                   ),
-                                ),
-                              );
-                              if (_interstitialAd != null) {
-                                _interstitialAd!.show();
-                                widget.analytics.logEvent(
-                                  name: "home_interstitialad_show",
-                                  parameters: {
-                                    "full_text":
-                                        "Home InterstitialAd showed successfully!",
-                                  },
                                 );
                               } else {
-                                widget.analytics.logEvent(
-                                  name: "home_interstitialad_null",
-                                  parameters: {
-                                    "full_text": "Home InterstitialAd is null!",
-                                  },
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Browser(
+                                      url: url[index],
+                                      title: title[index],
+                                      analytics: widget.analytics,
+                                      observer: widget.observer,
+                                    ),
+                                  ),
                                 );
                               }
                             } else {
-                              // ignore: use_build_context_synchronously
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                     content:
@@ -339,11 +284,12 @@ class _HomePageState extends State<HomePage> {
                       }),
                     ),
                   ),
+                  // End :: GridView -------------------------------------------
                 ]);
               } else {
                 return const Center(
                   child: CircularProgressIndicator(
-                    color: Colors.redAccent,
+                    color: Color.fromARGB(255, 1, 49, 122),
                   ),
                 );
               }

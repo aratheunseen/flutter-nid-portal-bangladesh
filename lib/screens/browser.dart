@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:nid/home.dart';
 import 'package:nid/screens/login_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -30,34 +29,21 @@ class Browser extends StatefulWidget {
 }
 
 class _BrowserState extends State<Browser> with TickerProviderStateMixin {
-  // Declare WebView Controller
   late final WebViewController _controller;
 
-  // Declare Ad variables
+  // Start :: BannerAd ---------------------------------------------------------
+
   BannerAd? _bannerAd;
-  InterstitialAd? _interstitialAd;
 
-  // Declare ProgressController
-  late AnimationController progressController;
-  bool determinate = false;
-
-  @override
-  void initState() {
-    FirebaseAnalytics.instance.logScreenView(
-      screenName: 'browser-page',
-    );
-    FirebaseAnalytics.instance
-        .logEvent(name: widget.title, parameters: {"url": widget.url});
-
-    // Start :: LoadAd
-    BannerAd(
+  void loadBannerAd() {
+    _bannerAd = BannerAd(
       adUnitId: AdManager.bannerAdUnitId,
       request: const AdRequest(),
-      size: AdSize.fullBanner,
+      size: AdSize.banner,
       listener: BannerAdListener(
-        onAdLoaded: (ad) {
+        onAdLoaded: (Ad ad) {
           setState(() {
-            _bannerAd = ad as BannerAd;
+            _bannerAd = ad as BannerAd?;
           });
           widget.analytics!.logEvent(
             name: "browser_banner_ad_loaded",
@@ -66,47 +52,82 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
             },
           );
         },
-        onAdFailedToLoad: (ad, err) {
-          ad.dispose();
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
           widget.analytics!.logEvent(
             name: "browser_banner_ad_failed_to_load",
             parameters: {
               "full_text": "Browser's Banner Ad Failed To Load",
             },
           );
+          ad.dispose();
         },
-      ),
-    ).load();
-
-    InterstitialAd.load(
-      adUnitId: AdManager.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          setState(() {
-            _interstitialAd = ad;
-          });
+        onAdOpened: (Ad ad) {
           widget.analytics!.logEvent(
-            name: "browser_interstitial_ad_loaded",
+            name: "browser_banner_ad_opened",
             parameters: {
-              "full_text": "Browser's Interstitial Ad Loaded",
+              "full_text": "Browser's Banner Ad Opened",
             },
           );
         },
-        onAdFailedToLoad: (err) {
-          _interstitialAd = null;
+        onAdClosed: (Ad ad) {
           widget.analytics!.logEvent(
-            name: "browser_interstitial_ad_failed_to_load",
+            name: "browser_banner_ad_closed",
             parameters: {
-              "full_text": "Browser's Interstitial Ad Failed To Load",
+              "full_text": "Browser's Banner Ad Closed",
             },
           );
         },
       ),
     );
-    // End :: LoadAd
+    _bannerAd!.load();
+  }
+  // End :: BannerAd -----------------------------------------------------------
 
-    // Start :: ProgressController
+  // Start :: InterstitialAd ---------------------------------------------------
+  void showInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: AdManager.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.show();
+          widget.analytics!.logEvent(
+            name: "browser_interstitialad_loaded_and_shown",
+            parameters: {
+              "full_text": "Browser's InterstitialAd Loaded And Shown",
+            },
+          );
+        },
+        onAdFailedToLoad: (err) {
+          widget.analytics!.logEvent(
+            name: "browser_interstitialad_failed_to_load",
+            parameters: {
+              "full_text": "Browser's InterstitialAd Failed To Load",
+            },
+          );
+        },
+      ),
+    );
+  }
+  // End :: InterstitialAd -----------------------------------------------------
+
+  // Declare :: ProgressController ---------------------------------------------
+  late AnimationController progressController;
+  bool determinate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'BrowserPage',
+    );
+    FirebaseAnalytics.instance
+        .logEvent(name: widget.title, parameters: {"url": widget.url});
+
+    loadBannerAd();
+    showInterstitialAd();
+
+    // Start :: ProgressController ----------------------------
     progressController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
@@ -114,10 +135,9 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         setState(() {});
       });
     progressController.repeat();
-    super.initState();
-    // End :: ProgressController
+    // End :: ProgressController ------------------------------
 
-    // Start :: UrlLauncher
+    // Start :: UrlLauncher -----------------------------------
     Future<void> launchOutside(Uri url) async {
       if (!await launchUrl(
         url,
@@ -132,9 +152,9 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         },
       );
     }
-    // End :: UrlLauncher
+    // End :: UrlLauncher -------------------------------------
 
-    // Start :: WebViewController
+    // Start :: WebViewController -----------------------------
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
@@ -156,6 +176,16 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
           onProgress: (int progress) {
             _cleanUI();
             progressController.value = progress / 100;
+            if (progress == 100) {
+              progressController.stop();
+            } else {
+              FirebaseAnalytics.instance.logEvent(
+                name: "browser_page_start_interstitialad_null",
+                parameters: {
+                  "full_text": "Browser Page Start InterstitialAd is null!",
+                },
+              );
+            }
           },
           onPageStarted: (String url) {
             progressController.value = 0;
@@ -263,15 +293,15 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
     }
 
     _controller = controller;
-    // End :: WebViewController
+    // End :: WebViewController -------------------------------
   }
 
-  // Start :: RemoveHeader&Footer
+  // Start :: RemoveHeader&Footer ----------------------------------------------
   Future<void> _cleanUI() async {
     await _controller.runJavaScript(
         "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none';document.getElementsByClassName('banner')[0].style.display='none';})()");
   }
-  // End :: RemoveHeader&Footer
+  // End :: RemoveHeader&Footer ------------------------------------------------
 
   void moreHandler(value) {
     switch (value) {
@@ -299,73 +329,31 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (context) => HomePage(
-                    title: "Nid Portal",
-                    analytics: FirebaseAnalytics.instance,
-                    observer: FirebaseAnalyticsObserver(
-                        analytics: FirebaseAnalytics.instance))), (r) {
-          return false;
-        });
-        return false;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        return true;
       },
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black45),
             onPressed: () async {
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => HomePage(
-                          title: "Nid Portal",
-                          analytics: FirebaseAnalytics.instance,
-                          observer: FirebaseAnalyticsObserver(
-                              analytics: FirebaseAnalytics.instance))), (r) {
-                return false;
-              });
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
           ),
           title: Text(widget.title,
               style: const TextStyle(color: Colors.black45, fontSize: 15)),
           actions: <Widget>[
             IconButton(
-              icon: Image.asset('assets/images/bn.png',
-                  width: 25, height: 25, color: Colors.black45),
-              onPressed: () {
-                if (widget.url.contains("locale=en")) {
-                  final String url =
-                      widget.url.replaceAll("locale=en", "locale=bn");
-                  _controller.loadRequest(Uri.parse(url));
-                }
-                if (_interstitialAd != null) {
-                  _interstitialAd!.show();
-                  FirebaseAnalytics.instance.logEvent(
-                    name: "browser_interstitialad_show",
-                    parameters: {
-                      "full_text":
-                          "Browser InterstitialAd showed successfully!",
-                    },
-                  );
-                } else {
-                  FirebaseAnalytics.instance.logEvent(
-                    name: "browser_interstitialad_null",
-                    parameters: {
-                      "full_text": "Browser InterstitialAd is null!",
-                    },
-                  );
-                }
-                // else if (widget.url.contains("locale=bn")) {
-                //   final String url =
-                //       widget.url.replaceAll("locale=bn", "locale=en");
-                //   _controller.loadRequest(Uri.parse(url));
-                // }
-              },
-            ),
+                icon: Image.asset('assets/images/bn.png',
+                    width: 25, height: 25, color: Colors.black45),
+                onPressed: () {
+                  if (widget.url.contains("locale=en")) {
+                    final String url =
+                        widget.url.replaceAll("locale=en", "locale=bn");
+                    _controller.loadRequest(Uri.parse(url));
+                  }
+                }),
             PopupMenuButton(
-              // constraints: const BoxConstraints.expand(height: 300),
               onSelected: moreHandler,
               itemBuilder: (BuildContext context) {
                 return [
@@ -382,11 +370,6 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
                 ];
               },
             ),
-            // IconButton(
-            //     icon: const Icon(Icons.refresh_outlined, color: Colors.black45),
-            //     onPressed: () {
-            //       _controller.reload();
-            //     })
           ],
         ),
         body: Column(
@@ -394,7 +377,6 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
             LinearProgressIndicator(
               value: progressController.value,
             ),
-            // Text(widget.url),
             Expanded(
               child: WebViewWidget(controller: _controller),
             ),
@@ -409,12 +391,6 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
               ),
           ],
         ),
-        // floatingActionButton: FloatingActionButton(
-        //   child: const Icon(Icons.refresh_outlined),
-        //   onPressed: () {
-        //     _controller.reload();
-        //   },
-        // ),
       ),
     );
   }

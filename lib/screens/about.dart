@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nid/home.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
@@ -17,14 +16,13 @@ Future<void> launchOutside(Uri url) async {
   )) {
     throw Exception('Could not launch $url');
   }
-  FirebaseAnalytics.instance.logEvent(name: "rate_this_app");
 }
 
 class _AboutState extends State<About> {
   @override
   void initState() {
     FirebaseAnalytics.instance.logScreenView(
-      screenName: 'about-page',
+      screenName: 'AboutPage',
     );
     super.initState();
   }
@@ -35,16 +33,7 @@ class _AboutState extends State<About> {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black45),
-            onPressed: () => Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => HomePage(
-                        title: "Nid Portal",
-                        analytics: FirebaseAnalytics.instance,
-                        observer: FirebaseAnalyticsObserver(
-                            analytics: FirebaseAnalytics.instance))), (r) {
-              return false;
-            }),
+            onPressed: () => Navigator.pop(context),
           ),
           title: const Text('About',
               style: TextStyle(color: Colors.black45, fontSize: 18)),
@@ -53,7 +42,8 @@ class _AboutState extends State<About> {
               onPressed: () async {
                 await launchOutside(Uri.parse(
                     'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
-                FirebaseAnalytics.instance.logEvent(name: "top_rate_this_app");
+                FirebaseAnalytics.instance
+                    .logEvent(name: "rate_this_app_top_icon");
               },
               icon: const Icon(Icons.rate_review_rounded,
                   color: Color.fromARGB(255, 65, 57, 30), size: 24),
@@ -62,24 +52,12 @@ class _AboutState extends State<About> {
         ),
         body: WillPopScope(
           onWillPop: () async {
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => HomePage(
-                        title: "Nid Portal",
-                        analytics: FirebaseAnalytics.instance,
-                        observer: FirebaseAnalyticsObserver(
-                            analytics: FirebaseAnalytics.instance))), (r) {
-              return false;
-            });
-            return false;
+            return Navigator.canPop(context);
           },
           child: Column(
             children: [
               Expanded(
-                child:
-                    // app icon and version
-                    Center(
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -95,14 +73,13 @@ class _AboutState extends State<About> {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'Version 1.4.27',
+                        'Version 1.4.28',
                         style: TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
                 ),
               ),
-              // rate this app
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(60),
@@ -116,7 +93,7 @@ class _AboutState extends State<About> {
                     await launchOutside(Uri.parse(
                         'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
                     FirebaseAnalytics.instance
-                        .logEvent(name: "bottom_rate_this_app");
+                        .logEvent(name: "rate_this_app_bottom_button");
                   },
                   child: const Text(
                     'Rate this application',
