@@ -86,31 +86,31 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
 
   // Start :: InterstitialAd ---------------------------------------------------
 
-  void loadInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: AdManager.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          ad.show();
-          widget.analytics!.logEvent(
-            name: "browser_interstitialad_loaded_and_shown",
-            parameters: {
-              "full_text": "Browser's InterstitialAd Loaded And Shown",
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          widget.analytics!.logEvent(
-            name: "browser_interstitialad_failed_to_load",
-            parameters: {
-              "full_text": "Browser's InterstitialAd Failed To Load",
-            },
-          );
-        },
-      ),
-    );
-  }
+  // void loadInterstitialAd() {
+  //   InterstitialAd.load(
+  //     adUnitId: AdManager.interstitialAdUnitId,
+  //     request: const AdRequest(),
+  //     adLoadCallback: InterstitialAdLoadCallback(
+  //       onAdLoaded: (ad) {
+  //         ad.show();
+  //         widget.analytics!.logEvent(
+  //           name: "browser_interstitialad_loaded_and_shown",
+  //           parameters: {
+  //             "full_text": "Browser's InterstitialAd Loaded And Shown",
+  //           },
+  //         );
+  //       },
+  //       onAdFailedToLoad: (err) {
+  //         widget.analytics!.logEvent(
+  //           name: "browser_interstitialad_failed_to_load",
+  //           parameters: {
+  //             "full_text": "Browser's InterstitialAd Failed To Load",
+  //           },
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
   // End :: InterstitialAd -----------------------------------------------------
 
   // Declare :: ProgressController ---------------------------------------------
@@ -128,7 +128,7 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
         .logEvent(name: widget.title, parameters: {"url": widget.url});
 
     loadBannerAd();
-    loadInterstitialAd();
+    // loadInterstitialAd();
 
     // Start :: ProgressController ----------------------------
     progressController = AnimationController(

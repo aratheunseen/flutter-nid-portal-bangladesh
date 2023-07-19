@@ -84,31 +84,31 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   // End :: BannerAd -----------------------------------------------------------
 
   // Start :: InterstitialAd ---------------------------------------------------
-  void showInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: AdManager.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          ad.show();
-          widget.analytics!.logEvent(
-            name: "browser_interstitialad_loaded_and_shown",
-            parameters: {
-              "full_text": "Browser's InterstitialAd Loaded And Shown",
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          widget.analytics!.logEvent(
-            name: "browser_interstitialad_failed_to_load",
-            parameters: {
-              "full_text": "Browser's InterstitialAd Failed To Load",
-            },
-          );
-        },
-      ),
-    );
-  }
+  // void showInterstitialAd() {
+  //   InterstitialAd.load(
+  //     adUnitId: AdManager.interstitialAdUnitId,
+  //     request: const AdRequest(),
+  //     adLoadCallback: InterstitialAdLoadCallback(
+  //       onAdLoaded: (ad) {
+  //         ad.show();
+  //         widget.analytics!.logEvent(
+  //           name: "browser_interstitialad_loaded_and_shown",
+  //           parameters: {
+  //             "full_text": "Browser's InterstitialAd Loaded And Shown",
+  //           },
+  //         );
+  //       },
+  //       onAdFailedToLoad: (err) {
+  //         widget.analytics!.logEvent(
+  //           name: "browser_interstitialad_failed_to_load",
+  //           parameters: {
+  //             "full_text": "Browser's InterstitialAd Failed To Load",
+  //           },
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
   // End :: InterstitialAd -----------------------------------------------------
 
   // Declare :: ProgressController ---------------------------------------------
@@ -125,7 +125,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         .logEvent(name: widget.title, parameters: {"url": widget.url});
 
     loadBannerAd();
-    showInterstitialAd();
+    // showInterstitialAd();
 
     // Start :: ProgressController ----------------------------
     progressController = AnimationController(

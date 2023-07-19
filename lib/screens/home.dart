@@ -192,6 +192,12 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                 );
+                                FirebaseAnalytics.instance.logEvent(
+                                  name: "${title[index]} clicked",
+                                  parameters: {
+                                    "full_text": "Login Page Clicked!",
+                                  },
+                                );
                               } else {
                                 Navigator.push(
                                   context,
@@ -203,6 +209,12 @@ class _HomePageState extends State<HomePage> {
                                       observer: widget.observer,
                                     ),
                                   ),
+                                );
+                                FirebaseAnalytics.instance.logEvent(
+                                  name: "${title[index]} clicked",
+                                  parameters: {
+                                    "full_text": "${title[index]} Clicked!",
+                                  },
                                 );
                               }
                             } else {
