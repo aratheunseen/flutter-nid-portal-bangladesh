@@ -288,7 +288,7 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
   // Start :: RemoveHeader&Footer ------------------------------
   Future<void> _cleanUI() async {
     await _controller.runJavaScript(
-        "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('banner')[0].style.display='none'; document.getElementsByClassName('claim-mobile')[0].style.display='none'; document.getElementsByClassName('register-mobile')[0].style.display='none'; document.getElementsByClassName('ui header title')[0].style.display='none';  document.getElementsByClassName('forgot')[0].style.display='none'; document.getElementsByClassName('faq')[0].style.display='none'; document.getElementsByClassName('info')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsByClassName('feedback-mobile')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none';})()");
+        "javascript:(function() { document.getElementsByClassName('top-bar')[0].style.display='none'; document.getElementsByClassName('footer')[0].style.display='none'; document.getElementsByClassName('banner')[0].style.display='none'; document.getElementsByClassName('claim-mobile')[0].style.display='none'; document.getElementsByClassName('register-mobile')[0].style.display='none'; document.getElementsByClassName('ui header title')[0].style.display='none';  document.getElementsByClassName('forgot')[0].style.display='none'; document.getElementsByClassName('faq')[0].style.display='none'; document.getElementsByClassName('info')[0].style.display='none'; document.getElementsByClassName('feedback-mobile')[0].style.display='none'; document.getElementsByClassName('page-title')[0].style.display='none'; document.getElementsByClassName('right-col')[0].style.display='none';})()");
   }
   // End :: RemoveHeader&Footer -------------------------------
 
@@ -403,16 +403,9 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
 
             // Start :: BannerAd --------------------------------------------
             if (_bannerAd != null)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  height: 60,
-                  color: Colors.transparent,
-                  child: SizedBox(
-                    height: 60,
-                    child: AdWidget(ad: _bannerAd!),
-                  ),
-                ),
+              SizedBox(
+                height: 60,
+                child: AdWidget(ad: _bannerAd!),
               ),
             // End :: BannerAd ----------------------------------------------
           ],

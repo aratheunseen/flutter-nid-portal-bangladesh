@@ -379,16 +379,9 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
 
             // Start :: BannerAd -------------------------------------------
             if (_bannerAd != null)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  height: 60,
-                  color: Colors.transparent,
-                  child: SizedBox(
-                    height: 60,
-                    child: AdWidget(ad: _bannerAd!),
-                  ),
-                ),
+              SizedBox(
+                height: 60,
+                child: AdWidget(ad: _bannerAd!),
               ),
             // End :: BannerAd ----------------------------------------------
           ],

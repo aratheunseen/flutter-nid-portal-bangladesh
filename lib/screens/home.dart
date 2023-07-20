@@ -153,13 +153,9 @@ class _HomePageState extends State<HomePage> {
                 return Column(children: [
                   // Start :: BannerAd -----------------------------------------
                   if (_bannerAd != null)
-                    Container(
+                    SizedBox(
                       height: 60,
-                      color: Colors.transparent,
-                      child: SizedBox(
-                        height: 60,
-                        child: AdWidget(ad: _bannerAd!),
-                      ),
+                      child: AdWidget(ad: _bannerAd!),
                     ),
                   // End :: BannerAd -------------------------------------------
 
