@@ -403,9 +403,13 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
 
             // Start :: BannerAd --------------------------------------------
             if (_bannerAd != null)
-              SizedBox(
-                height: 60,
-                child: AdWidget(ad: _bannerAd!),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
               ),
             // End :: BannerAd ----------------------------------------------
           ],
