@@ -371,23 +371,23 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
             ),
             // End :: LinearProgressIndicator ------------------------------
 
+            // Start :: BannerAd -------------------------------------------
+            // if (_bannerAd != null)
+            //   Align(
+            //     alignment: Alignment.bottomCenter,
+            //     child: SizedBox(
+            //       width: _bannerAd!.size.width.toDouble(),
+            //       height: _bannerAd!.size.height.toDouble(),
+            //       child: AdWidget(ad: _bannerAd!),
+            //     ),
+            //   ),
+            // End :: BannerAd ----------------------------------------------
+
             // Start :: WebView --------------------------------------------
             Expanded(
               child: WebViewWidget(controller: _controller),
             ),
             // End :: WebView ----------------------------------------------
-
-            // Start :: BannerAd -------------------------------------------
-            if (_bannerAd != null)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SizedBox(
-                  width: _bannerAd!.size.width.toDouble(),
-                  height: _bannerAd!.size.height.toDouble(),
-                  child: AdWidget(ad: _bannerAd!),
-                ),
-              ),
-            // End :: BannerAd ----------------------------------------------
           ],
         ),
       ),
