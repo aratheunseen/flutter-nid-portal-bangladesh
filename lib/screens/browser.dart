@@ -84,31 +84,25 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
   // End :: BannerAd -----------------------------------------------------------
 
   // Start :: InterstitialAd ---------------------------------------------------
-  // void showInterstitialAd() {
-  //   InterstitialAd.load(
-  //     adUnitId: AdManager.interstitialAdUnitId,
-  //     request: const AdRequest(),
-  //     adLoadCallback: InterstitialAdLoadCallback(
-  //       onAdLoaded: (ad) {
-  //         ad.show();
-  //         widget.analytics!.logEvent(
-  //           name: "browser_interstitialad_loaded_and_shown",
-  //           parameters: {
-  //             "full_text": "Browser's InterstitialAd Loaded And Shown",
-  //           },
-  //         );
-  //       },
-  //       onAdFailedToLoad: (err) {
-  //         widget.analytics!.logEvent(
-  //           name: "browser_interstitialad_failed_to_load",
-  //           parameters: {
-  //             "full_text": "Browser's InterstitialAd Failed To Load",
-  //           },
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
+  InterstitialAd? _interstitialAd;
+
+  void loadInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdManager.interstitialAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          // Called when an ad is successfully received.
+          onAdLoaded: (ad) {
+            debugPrint('$ad loaded.');
+            // Keep a reference to the ad so you can show it later.
+            _interstitialAd = ad;
+          },
+          // Called when an ad request failed.
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error');
+          },
+        ));
+  }
   // End :: InterstitialAd -----------------------------------------------------
 
   // Declare :: ProgressController ---------------------------------------------
@@ -125,7 +119,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         .logEvent(name: widget.title, parameters: {"url": widget.url});
 
     loadBannerAd();
-    // showInterstitialAd();
+    loadInterstitialAd();
 
     // Start :: ProgressController ----------------------------
     progressController = AnimationController(
@@ -311,6 +305,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
 
           clearCookies();
           _controller.reload();
+          _interstitialAd?.show();
         }
         break;
     }
@@ -338,6 +333,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
                 icon: Image.asset('assets/images/bn.png',
                     width: 25, height: 25, color: Colors.black45),
                 onPressed: () {
+                  _interstitialAd?.show();
                   if (widget.url.contains("locale=en")) {
                     final String url =
                         widget.url.replaceAll("locale=en", "locale=bn");
@@ -371,23 +367,28 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
             ),
             // End :: LinearProgressIndicator ------------------------------
 
-            // Start :: BannerAd -------------------------------------------
-            // if (_bannerAd != null)
-            //   Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: SizedBox(
-            //       width: _bannerAd!.size.width.toDouble(),
-            //       height: _bannerAd!.size.height.toDouble(),
-            //       child: AdWidget(ad: _bannerAd!),
-            //     ),
-            //   ),
-            // End :: BannerAd ----------------------------------------------
-
             // Start :: WebView --------------------------------------------
             Expanded(
               child: WebViewWidget(controller: _controller),
             ),
             // End :: WebView ----------------------------------------------
+
+            const LinearProgressIndicator(
+              value: 0,
+              backgroundColor: Colors.black12,
+            ),
+
+            // Start :: BannerAd -------------------------------------------
+            if (_bannerAd != null)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
+              ),
+            // End :: BannerAd ----------------------------------------------
           ],
         ),
       ),

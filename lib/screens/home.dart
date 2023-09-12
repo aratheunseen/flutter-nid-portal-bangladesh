@@ -11,7 +11,7 @@ import 'package:nid/admanager.dart';
 import 'package:nid/screens/browser.dart';
 import 'package:nid/screens/about.dart';
 import 'package:nid/screens/login_screen.dart';
-import '../constants.dart';
+import 'package:nid/constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -35,66 +35,65 @@ class _HomePageState extends State<HomePage> {
     return MobileAds.instance.initialize();
   }
 
-  // Start :: BannerAd --------------------------------------------------------
-
   BannerAd? _bannerAd;
+  InterstitialAd? _interstitialAd;
 
+  /// Loads a banner ad.
   void loadBannerAd() {
     _bannerAd = BannerAd(
       adUnitId: AdManager.bannerAdUnitId,
       request: const AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(
+        // Called when an ad is successfully received.
         onAdLoaded: (ad) {
-          setState(() {
-            _bannerAd = ad as BannerAd?;
-          });
-          widget.analytics.logEvent(
-            name: "home_bannerad_loaded",
-            parameters: {
-              "full_text": "Home BannerAd loaded successfully!",
-            },
-          );
+          debugPrint('$ad loaded.');
         },
+        // Called when an ad request failed.
         onAdFailedToLoad: (ad, err) {
-          _bannerAd = null;
+          // Dispose the ad here to free resources.
           ad.dispose();
-          widget.analytics.logEvent(
-            name: "home_bannerad_failedtoload",
-            parameters: {
-              "full_text": err.toString(),
-            },
-          );
         },
+        // Called when an ad opens an overlay that covers the screen.
+        onAdOpened: (Ad ad) {},
+        // Called when an ad removes an overlay that covers the screen.
+        onAdClosed: (Ad ad) {},
+        // Called when an impression occurs on the ad.
+        onAdImpression: (Ad ad) {},
       ),
     )..load();
-    // End :: BannerAd --------------------------------------------------------
+  }
+
+  /// Loads an interstitial ad.
+  void loadInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdManager.interstitialAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          // Called when an ad is successfully received.
+          onAdLoaded: (ad) {
+            debugPrint('$ad loaded.');
+            // Keep a reference to the ad so you can show it later.
+            _interstitialAd = ad;
+          },
+          // Called when an ad request failed.
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error');
+          },
+        ));
   }
 
   @override
   void initState() {
     super.initState();
 
+    loadBannerAd();
+    loadInterstitialAd();
+
     FirebaseAnalytics.instance.logScreenView(
       screenName: 'HomePage',
     );
-
-    loadBannerAd();
   }
-
-  // Start :: Dispose Ad ------------------------------------------------------
-  @override
-  void dispose() {
-    _bannerAd?.dispose();
-    super.dispose();
-    widget.analytics.logEvent(
-      name: "home_bannerad_dispose",
-      parameters: {
-        "full_text": "Home BannerAd disposed successfully!",
-      },
-    );
-  }
-  // End :: Dispose Ad --------------------------------------------------------
 
   int _getCrossAxisCount(BoxConstraints constraints) {
     double screenWidth = constraints.maxWidth;
@@ -151,18 +150,6 @@ class _HomePageState extends State<HomePage> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return Column(children: [
-                  // Start :: BannerAd -----------------------------------------
-                  // if (_bannerAd != null)
-                  //   Align(
-                  //     alignment: Alignment.bottomCenter,
-                  //     child: SizedBox(
-                  //       width: _bannerAd!.size.width.toDouble(),
-                  //       height: _bannerAd!.size.height.toDouble(),
-                  //       child: AdWidget(ad: _bannerAd!),
-                  //     ),
-                  //   ),
-                  // End :: BannerAd -------------------------------------------
-
                   // Start :: GridView -----------------------------------------
                   Expanded(
                     child: GridView.count(
@@ -178,9 +165,9 @@ class _HomePageState extends State<HomePage> {
                                     ConnectivityResult.mobile ||
                                 connectivityResult == ConnectivityResult.wifi ||
                                 connectivityResult ==
-                                    ConnectivityResult.ethernet ||
-                                connectivityResult == ConnectivityResult.vpn) {
-                              if (index == 2) {
+                                    ConnectivityResult.ethernet) {
+                              if (index == 3) {
+                                _interstitialAd?.show();
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -295,6 +282,22 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   // End :: GridView -------------------------------------------
+
+                  // Start :: BannerAd -----------------------------------------
+                  const LinearProgressIndicator(
+                    value: 0,
+                    backgroundColor: Colors.black12,
+                  ),
+                  if (_bannerAd != null)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: SizedBox(
+                        width: _bannerAd!.size.width.toDouble(),
+                        height: _bannerAd!.size.height.toDouble(),
+                        child: AdWidget(ad: _bannerAd!),
+                      ),
+                    ),
+                  // End :: BannerAd -------------------------------------------
                 ]);
               } else {
                 return const Center(

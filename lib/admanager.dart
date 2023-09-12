@@ -34,17 +34,7 @@ class AdManager {
 
   // static String get nativeAdUnitId {
   //   if (Platform.isAndroid) {
-  //     return "ca-app-pub-2474229370148368/7442225061";
-  //     // } else if (Platform.isIOS) {
-  //     //   return "ca-app-pub-xxx";
-  //   } else {
-  //     throw UnsupportedError("Unsupported platform");
-  //   }
-  // }
-
-  // static String get rewardedAdUnitId {
-  //   if (Platform.isAndroid) {
-  //     return "ca-app-pub-2474229370148368/7442225061";
+  //     return "ca-app-pub-3940256099942544/2247696110";
   //     // } else if (Platform.isIOS) {
   //     //   return "ca-app-pub-xxx";
   //   } else {
