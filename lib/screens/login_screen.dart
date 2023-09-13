@@ -94,7 +94,7 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          ad.show();
+          _interstitialAd = ad;
           widget.analytics!.logEvent(
             name: "browser_interstitialad_loaded_and_shown",
             parameters: {
@@ -320,10 +320,9 @@ class _LoginPageBrowserState extends State<LoginPageBrowser>
           void clearCookies() async {
             await cookieManager.clearCookies();
           }
-
+          _interstitialAd?.show();
           clearCookies();
           _controller.reload();
-          _interstitialAd?.show();
         }
         break;
     }

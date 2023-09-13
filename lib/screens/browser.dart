@@ -88,20 +88,28 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
 
   void loadInterstitialAd() {
     InterstitialAd.load(
-        adUnitId: AdManager.interstitialAdUnitId,
-        request: const AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(
-          // Called when an ad is successfully received.
-          onAdLoaded: (ad) {
-            debugPrint('$ad loaded.');
-            // Keep a reference to the ad so you can show it later.
-            _interstitialAd = ad;
-          },
-          // Called when an ad request failed.
-          onAdFailedToLoad: (LoadAdError error) {
-            debugPrint('InterstitialAd failed to load: $error');
-          },
-        ));
+      adUnitId: AdManager.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          widget.analytics!.logEvent(
+            name: "browser_interstitialad_loaded_and_shown",
+            parameters: {
+              "full_text": "Browser's InterstitialAd Loaded And Shown",
+            },
+          );
+        },
+        onAdFailedToLoad: (err) {
+          widget.analytics!.logEvent(
+            name: "browser_interstitialad_failed_to_load",
+            parameters: {
+              "full_text": "Browser's InterstitialAd Failed To Load",
+            },
+          );
+        },
+      ),
+    );
   }
   // End :: InterstitialAd -----------------------------------------------------
 
@@ -297,6 +305,7 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
         break;
       case 'logout':
         {
+          _interstitialAd?.show();
           late final WebViewCookieManager cookieManager =
               WebViewCookieManager();
           void clearCookies() async {
@@ -305,7 +314,6 @@ class _BrowserState extends State<Browser> with TickerProviderStateMixin {
 
           clearCookies();
           _controller.reload();
-          _interstitialAd?.show();
         }
         break;
     }

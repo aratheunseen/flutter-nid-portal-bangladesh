@@ -72,7 +72,6 @@ class _HomePageState extends State<HomePage> {
         adLoadCallback: InterstitialAdLoadCallback(
           // Called when an ad is successfully received.
           onAdLoaded: (ad) {
-            debugPrint('$ad loaded.');
             // Keep a reference to the ad so you can show it later.
             _interstitialAd = ad;
           },
