@@ -41,7 +41,7 @@ class _AboutState extends State<About> {
             IconButton(
               onPressed: () async {
                 await launchOutside(Uri.parse(
-                    'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
+                    'https://play.google.com/store/apps/details?id=bornomala.nid'));
                 FirebaseAnalytics.instance
                     .logEvent(name: "rate_this_app_top_icon");
               },
@@ -68,12 +68,12 @@ class _AboutState extends State<About> {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'NID Portal: Bangladesh',
+                        'NID Portal',
                         style: TextStyle(fontSize: 18),
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'Version 1.4.38',
+                        'Version 1.4.39',
                         style: TextStyle(fontSize: 14),
                       ),
                     ],
@@ -91,7 +91,7 @@ class _AboutState extends State<About> {
                   ),
                   onPressed: () async {
                     await launchOutside(Uri.parse(
-                        'https://play.google.com/store/apps/details?id=bd.gov.nidw.portal'));
+                        'https://play.google.com/store/apps/details?id=bornomala.nid'));
                     FirebaseAnalytics.instance
                         .logEvent(name: "rate_this_app_bottom_button");
                   },
