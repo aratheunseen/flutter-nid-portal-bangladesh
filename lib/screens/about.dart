@@ -41,9 +41,9 @@ class _AboutState extends State<About> {
             IconButton(
               onPressed: () async {
                 await launchOutside(Uri.parse(
-                    'https://play.google.com/store/apps/details?id=bornomala.nid'));
+                    'https://github.com/BornomalaSoftware/NID_Portal_Bangladesh'));
                 FirebaseAnalytics.instance
-                    .logEvent(name: "rate_this_app_top_icon");
+                    .logEvent(name: "rate_this_app_top_github");
               },
               icon: const Icon(Icons.rate_review_rounded,
                   color: Color.fromARGB(255, 65, 57, 30), size: 24),
@@ -68,7 +68,7 @@ class _AboutState extends State<About> {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'NID Portal',
+                        'NID Portal: Bangladesh',
                         style: TextStyle(fontSize: 18),
                       ),
                       const SizedBox(height: 10),
@@ -91,9 +91,9 @@ class _AboutState extends State<About> {
                   ),
                   onPressed: () async {
                     await launchOutside(Uri.parse(
-                        'https://play.google.com/store/apps/details?id=bornomala.nid'));
+                        'https://github.com/BornomalaSoftware/NID_Portal_Bangladesh'));
                     FirebaseAnalytics.instance
-                        .logEvent(name: "rate_this_app_bottom_button");
+                        .logEvent(name: "rate_this_app_bottom_github");
                   },
                   child: const Text(
                     'Rate this application',
